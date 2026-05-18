@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+
+    <link rel="stylesheet" href="assets/css/admin.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+      <!-- Header with Title and Badge -->
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="text-4xl font-bold">Admin Panel 🛠️</h1>
+        <div
+          class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-lg font-semibold text-sm"
+        >
+          System Administrator Mode
+        </div>
+      </div>
+
+      <!-- DASHBOARD TAB -->
+      <div id="dashboard" class="tab-content active">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div
+            class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800"
+          >
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+              Total Users
+            </p>
+            <p class="text-3xl font-bold">0</p>
+          </div>
+          <div
+            class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800"
+          >
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">Drivers</p>
+            <p class="text-3xl font-bold text-blue-600">0</p>
+          </div>
+          <div
+            class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800"
+          >
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+              Total Rides
+            </p>
+            <p class="text-3xl font-bold">0</p>
+          </div>
+          <div
+            class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800"
+          >
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">Pending</p>
+            <p class="text-3xl font-bold text-yellow-500">0</p>
+          </div>
+          <div
+            class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800"
+          >
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">Revenue</p>
+            <p class="text-3xl font-bold text-green-600">₹ 0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMINS TAB -->
+      <div id="admins" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">👑 System Admins</h2>
+          <div class="loading" id="adminsLoading">Loading admins...</div>
+          <div id="adminsContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- RIDES TAB -->
+      <div id="rides" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">🚗 All Rides</h2>
+          <div class="loading" id="ridesLoading">Loading rides...</div>
+          <div id="ridesContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div id="users" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">👥 All Users</h2>
+          <div class="loading" id="usersLoading">Loading users...</div>
+          <div id="usersContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- DRIVERS TAB -->
+      <div id="drivers" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">🚕 All Drivers</h2>
+          <div class="loading" id="driversLoading">Loading drivers...</div>
+          <div id="driversContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- WALLETS TAB -->
+      <div id="wallets" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">💳 All Wallets</h2>
+          <div class="loading" id="walletsLoading">Loading wallets...</div>
+          <div id="walletsContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS TAB -->
+      <div id="notifications" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <h2 class="text-2xl font-bold mb-4">🔔 All Notifications</h2>
+          <div class="loading" id="notificationsLoading">
+            Loading notifications...
+          </div>
+          <div id="notificationsContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- BROADCAST TAB -->
+      <div id="broadcast" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-zinc-200 dark:border-zinc-800 max-w-4xl mx-auto"
+        >
+          <div class="flex items-center gap-3 mb-8">
+            <span class="text-3xl">📢</span>
+            <h2 class="text-2xl font-black text-zinc-900 dark:text-white">
+              Send Global Notification
+            </h2>
+          </div>
+
+          <form id="broadcastForm" class="space-y-6">
+            <div class="space-y-2">
+              <label
+                class="text-xs font-black uppercase tracking-widest text-zinc-400"
+                >Notification Title</label
+              >
+              <input
+                type="text"
+                id="broadcastTitle"
+                required
+                placeholder="e.g., System Maintenance"
+                class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-yellow-400 outline-none transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label
+                class="text-xs font-black uppercase tracking-widest text-zinc-400"
+                >Message Content</label
+              >
+              <textarea
+                id="broadcastMessage"
+                required
+                rows="4"
+                placeholder="Write your message here..."
+                class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-yellow-400 outline-none transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 resize-none"
+              ></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-black uppercase tracking-widest text-zinc-400"
+                  >Category</label
+                >
+                <div class="relative">
+                  <select
+                    id="broadcastCategory"
+                    class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-yellow-400 outline-none transition-all font-bold text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="system">📢 System</option>
+                    <option value="promo">🎁 Promo/Offer</option>
+                    <option value="ride">🚕 Ride Update</option>
+                    <option value="wallet">💳 Wallet Alert</option>
+                  </select>
+                  <div
+                    class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="3"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-black uppercase tracking-widest text-zinc-400"
+                  >Target Audience</label
+                >
+                <div class="relative">
+                  <select
+                    id="broadcastAudience"
+                    class="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-yellow-400 outline-none transition-all font-bold text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="everyone">Everyone</option>
+                    <option value="riders_only">Riders Only</option>
+                    <option value="drivers_only">Drivers Only</option>
+                  </select>
+                  <div
+                    class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="3"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              id="broadcastBtn"
+              class="w-full mt-6 py-5 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-2xl transition-all shadow-xl shadow-yellow-400/20 active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              <span id="btnText">🚀 Broadcast Message</span>
+              <div
+                id="btnLoader"
+                class="hidden w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"
+              ></div>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- PAST USERS TAB -->
+      <div id="pastusers" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">📜 Past Users Archive</h2>
+            <div
+              class="text-xs text-zinc-400 font-bold uppercase tracking-widest"
+            >
+              Read-Only Snapshot
+            </div>
+          </div>
+          <div class="loading" id="pastusersLoading">
+            Loading archived users...
+          </div>
+          <div id="pastusersContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <!-- PAST DRIVERS TAB -->
+      <div id="pastdrivers" class="tab-content hidden">
+        <div
+          class="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">📜 Past Drivers Archive</h2>
+            <div
+              class="text-xs text-zinc-400 font-bold uppercase tracking-widest"
+            >
+              Read-Only Snapshot
+            </div>
+          </div>
+          <div class="loading" id="pastdriversLoading">
+            Loading archived drivers...
+          </div>
+          <div id="pastdriversContainer" class="overflow-x-auto"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=14"></script>
+    <script src="assets/js/main.js?v=14"></script>
+    <script src="assets/js/loader.js?v=14"></script>
+    <script src="assets/js/admin-dashboard.js"></script>
+  </body>
+</html>

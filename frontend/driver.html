@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Driver Dashboard</title>
+    <meta
+      name="description"
+      content="iCab Driver Dashboard — manage rides, earnings and availability."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/driver.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Profile Warning Banner -->
+      <div id="profileWarningContainer" class="hidden mb-6"></div>
+
+      <!-- Page Title -->
+      <div
+        class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">
+            Driver Dashboard 🚗
+          </h1>
+          <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+            Manage your rides, availability and earnings.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-sm font-bold text-zinc-400">
+          ⭐ <span id="driverRatingDisplay">5.0</span> Rating &nbsp;|&nbsp;
+          <span id="driverVehicleDisplay" class="text-zinc-500">—</span>
+        </div>
+      </div>
+
+      <!-- ── Online Toggle ── -->
+      <div class="online-toggle-wrap mb-6" id="onlineToggleWrap">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="flex-1">
+          <p class="font-black text-lg" id="onlineStatusText">
+            You are Offline
+          </p>
+          <p class="text-sm text-zinc-400" id="onlineStatusSub">
+            Toggle to start receiving ride requests
+          </p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            id="onlineToggle"
+            class="sr-only peer"
+            onchange="toggleOnline()"
+          />
+          <div
+            class="w-14 h-7 bg-zinc-200 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"
+          ></div>
+        </label>
+      </div>
+
+      <!-- ── Stats Row ── -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="driver-stat">
+          <span class="text-2xl mb-2">💰</span>
+          <p class="text-xl font-black text-green-500">
+            ₹<span id="todayEarnings">0</span>
+          </p>
+          <p class="text-xs text-zinc-400 mt-1">Today</p>
+        </div>
+        <div class="driver-stat">
+          <span class="text-2xl mb-2">🚕</span>
+          <p class="text-xl font-black" id="todayRides">0</p>
+          <p class="text-xs text-zinc-400 mt-1">Today's Rides</p>
+        </div>
+        <div class="driver-stat">
+          <span class="text-2xl mb-2">📈</span>
+          <p class="text-xl font-black text-yellow-500">
+            ₹<span id="totalEarnings">0</span>
+          </p>
+          <p class="text-xs text-zinc-400 mt-1">Total Earnings</p>
+        </div>
+        <div class="driver-stat">
+          <span class="text-2xl mb-2">🏆</span>
+          <p class="text-xl font-black" id="totalRidesCount">0</p>
+          <p class="text-xs text-zinc-400 mt-1">Total Rides</p>
+        </div>
+        <div class="driver-stat">
+          <span class="text-2xl mb-2">💳</span>
+          <p class="text-xl font-black text-blue-500">
+            ₹<span id="walletBalance">0</span>
+          </p>
+          <p class="text-xs text-zinc-400 mt-1">Wallet</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- LEFT: Ride Requests + Active Ride -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+          <!-- Pending Ride Requests (from polling) -->
+          <div id="rideRequestSection" class="hidden">
+            <h3 class="text-lg font-bold mb-4">🔔 Ride Requests</h3>
+            <div id="pendingRidesList" class="space-y-4">
+              <p class="text-center py-4 text-zinc-400 text-sm">
+                Checking for rides...
+              </p>
+            </div>
+          </div>
+
+          <!-- Active Ride Status -->
+          <div id="activeRideSection" class="hidden">
+            <div class="card border-2 border-green-400 dark:border-green-500">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">
+                  🚦 Active Ride
+                  <span id="activeRideIdDisplay" class="text-yellow-500"></span>
+                </h3>
+                <span
+                  id="activeRideStatusBadge"
+                  class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                  >Accepted</span
+                >
+              </div>
+              <div class="space-y-3 mb-4">
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"
+                    ></span>
+                    <p class="text-sm font-semibold" id="activePickup">—</p>
+                  </div>
+                  <div id="activePickupCoords" class="ml-6"></div>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="w-3 h-3 rounded-full bg-red-500 flex-shrink-0"
+                    ></span>
+                    <p class="text-sm font-semibold" id="activeDropoff">—</p>
+                  </div>
+                  <div id="activeDropoffCoords" class="ml-6"></div>
+                </div>
+              </div>
+
+              <!-- Rider Info -->
+              <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded-xl mb-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-xs text-zinc-400">Rider</p>
+                    <p class="font-bold" id="activeRiderName">—</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-zinc-400">Payment</p>
+                    <p class="font-bold capitalize" id="activePaymentMethod">
+                      —
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <p class="text-xs text-zinc-400">Fare</p>
+                  <p class="font-black text-green-500 text-xl">
+                    ₹<span id="activeFare">0</span>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-zinc-400">📏 Distance</p>
+                  <p class="font-bold" id="activeDistance">—</p>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div id="activeRideBtns" class="flex gap-3">
+                <button
+                  onclick="driverCancelRide()"
+                  class="flex-1 py-3 rounded-2xl border-2 border-red-400 text-red-400 font-black hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm"
+                >
+                  ✕ Cancel
+                </button>
+                <button
+                  id="startRideBtn"
+                  onclick="startActiveRide()"
+                  class="flex-1 py-3 rounded-2xl bg-yellow-400 hover:bg-yellow-500 text-black font-black transition shadow-lg text-sm"
+                >
+                  🚩 Start Ride
+                </button>
+                <button
+                  id="completeRideBtn"
+                  onclick="completeActiveRide()"
+                  class="flex-1 py-3 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black transition shadow-lg text-sm hidden"
+                >
+                  ✓ Complete
+                </button>
+                <button
+                  id="cashConfirmBtn"
+                  onclick="confirmCashPayment()"
+                  class="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black transition shadow-lg text-sm hidden"
+                >
+                  💵 Cash Received
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Offline placeholder -->
+          <div id="offlinePlaceholder" class="card text-center py-14">
+            <div id="offlineIcon" class="text-5xl mb-4">😴</div>
+            <h3 id="offlineTitle" class="text-xl font-black mb-2">
+              You're Offline
+            </h3>
+            <p id="offlineText" class="text-zinc-400 text-sm mb-5">
+              Go online to start receiving ride requests and earning.
+            </p>
+            <button
+              id="offlineBtn"
+              onclick="document.getElementById('onlineToggle').click()"
+              class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-black rounded-2xl transition"
+            >
+              Go Online
+            </button>
+          </div>
+
+          <!-- Completed Rides Today -->
+          <div class="card">
+            <h3 class="text-lg font-bold mb-5">📋 Completed Rides Today</h3>
+            <div id="todayRidesList">
+              <p class="text-center py-8 text-zinc-400 text-sm">
+                No rides completed today yet.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Profile + Weekly Chart -->
+        <div class="flex flex-col gap-6">
+          <!-- Driver Profile Card -->
+          <div class="card">
+            <h3
+              class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4"
+            >
+              🪪 Your Profile
+            </h3>
+            <div class="flex flex-col items-center text-center gap-2 mb-4">
+              <div
+                class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-2xl font-black text-black"
+                id="driverAvatarDisplay"
+              >
+                ?
+              </div>
+              <p class="font-black text-lg" id="driverNameDisplay">—</p>
+              <div
+                class="flex items-center gap-1 text-yellow-500 font-bold text-sm"
+              >
+                ⭐ <span id="driverRatingDisplay2">5.0</span>
+              </div>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div
+                class="flex justify-between items-center py-2 border-b border-zinc-100 dark:border-zinc-800"
+              >
+                <span class="text-zinc-400">Vehicle</span>
+                <span class="font-semibold" id="vehicleDisplay">—</span>
+              </div>
+              <div
+                class="flex justify-between items-center py-2 border-b border-zinc-100 dark:border-zinc-800"
+              >
+                <span class="text-zinc-400">Plate</span>
+                <span class="font-mono font-bold" id="plateDisplay">—</span>
+              </div>
+              <div
+                class="flex justify-between items-center py-2 border-b border-zinc-100 dark:border-zinc-800"
+              >
+                <span class="text-zinc-400">License</span>
+                <span class="font-mono font-bold" id="licenseDisplay">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-zinc-400">Phone</span>
+                <span class="font-semibold" id="phoneDisplay">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Earnings Chart -->
+          <div class="card">
+            <h3
+              class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4"
+            >
+              📊 Weekly Earnings
+            </h3>
+            <div class="driver-height-container">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/api.js?v=16"></script>
+    <script src="assets/js/auth.js?v=16"></script>
+    <script src="assets/js/main.js?v=16"></script>
+    <script src="assets/js/loader.js?v=16"></script>
+    <script src="assets/js/driver.js?v=16"></script>
+    <script src="assets/js/notifications.js?v=16"></script>
+  </body>
+</html>

@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Driver Profile</title>
+    <meta
+      name="description"
+      content="Manage your iCab driver profile, vehicle info, and account settings."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/profile.css" />
+    <!-- Cropper.js -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <!-- Shared Header -->
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Page Title -->
+      <div
+        class="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
+      >
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">Driver Profile</h1>
+          <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+            Manage your driver account, vehicle info and security.
+          </p>
+        </div>
+        <button
+          id="toggleEditBtn"
+          onclick="toggleEditMode()"
+          class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-2xl transition-all duration-200 shadow-md hover:shadow-yellow-400/30 flex items-center gap-2"
+        >
+          <span id="btnIcon">✏️</span> <span id="btnText">Edit Profile</span>
+        </button>
+      </div>
+
+      <!-- Profile Completion Bar -->
+      <div class="card mb-8">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-semibold text-sm">Profile Completion</span>
+          <span id="dpCompletionPct" class="text-yellow-500 font-black text-lg"
+            >0%</span
+          >
+        </div>
+        <div
+          class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3 overflow-hidden"
+        >
+          <div
+            id="dpCompletionBar"
+            class="h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-700"
+            style="width: 0%"
+          ></div>
+        </div>
+        <p
+          id="dpCompletionMsg"
+          class="text-xs text-zinc-500 dark:text-zinc-400 mt-2"
+        >
+          Complete your profile to start receiving more ride requests.
+        </p>
+      </div>
+
+      <!-- Profile Header Banner (Center-aligned Card) -->
+      <div class="flex flex-col items-center mb-8">
+        <div
+          class="card w-full max-w-2xl flex flex-col items-center text-center gap-6 py-10 relative overflow-hidden"
+        >
+          <!-- Subtle background glow -->
+          <div
+            class="absolute -top-24 -left-24 w-48 h-48 bg-yellow-400/10 rounded-full blur-3xl"
+          ></div>
+          <div
+            class="absolute -bottom-24 -right-24 w-48 h-48 bg-yellow-400/10 rounded-full blur-3xl"
+          ></div>
+
+          <!-- Avatar Section -->
+          <div class="relative z-10">
+            <div class="relative w-32 h-32">
+              <div
+                id="driverProfileAvatar"
+                class="avatar-circle w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-zinc-950 text-5xl font-black flex items-center justify-center shadow-2xl border-4 border-white dark:border-zinc-800 overflow-hidden"
+              >
+                ?
+              </div>
+              <label
+                for="dpPhotoInput"
+                id="dpAvatarUploadLabel"
+                class="absolute bottom-1 right-1 w-10 h-10 bg-yellow-400 hover:bg-yellow-500 text-zinc-950 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300 hover:scale-110 border-2 border-white dark:border-zinc-900 hidden"
+              >
+                📷
+              </label>
+              <input
+                id="dpPhotoInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                onchange="handleDpPhotoUpload(event)"
+              />
+            </div>
+          </div>
+
+          <div class="relative z-10 flex flex-col items-center">
+            <h2
+              class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight"
+              id="driverProfileName"
+            >
+              —
+            </h2>
+            <p
+              class="text-zinc-500 dark:text-zinc-400 font-medium"
+              id="driverProfileEmail"
+            >
+              —
+            </p>
+            <p
+              class="text-sm text-zinc-400 mt-0.5"
+              id="driverProfileDisplayPhone"
+            >
+              —
+            </p>
+            <div class="flex items-center justify-center gap-3 mt-4 flex-wrap">
+              <span
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-black uppercase tracking-widest border border-green-200 dark:border-green-800"
+                >🚗 Driver</span
+              >
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold border border-yellow-200 dark:border-yellow-900/30"
+                >⭐ <span id="driverProfileRating">5.0</span></span
+              >
+              <button
+                id="dpRemovePhotoBtn"
+                onclick="removeDpPhoto()"
+                class="hidden text-xs text-red-500 hover:text-red-400 font-bold underline transition"
+              >
+                Remove Photo
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div
+            class="w-full max-w-md grid grid-cols-2 divide-x divide-zinc-100 dark:divide-zinc-800 pt-6 mt-2 relative z-10"
+          >
+            <div class="flex flex-col items-center px-4">
+              <span
+                class="text-3xl font-black text-green-500"
+                id="driverProfileTotalRides"
+                >0</span
+              >
+              <span
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1"
+                >Total Rides</span
+              >
+            </div>
+            <div class="flex flex-col items-center px-4">
+              <span
+                class="text-xl font-black dark:text-zinc-200"
+                id="driverProfileJoined"
+                >—</span
+              >
+              <span
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1"
+                >Member Since</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Form Sections (Exactly matching ss-3/user profile) -->
+      <div class="flex flex-col gap-6">
+        <!-- 1. Personal Information -->
+        <div class="card">
+          <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+            👤 Personal Information
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label>First Name <span class="req">*</span></label>
+              <input
+                id="dpFirst"
+                type="text"
+                placeholder="e.g. Raju"
+                maxlength="10"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="dpValidateFirstName()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Last Name <span class="req">*</span></label>
+              <input
+                id="dpLast"
+                type="text"
+                placeholder="e.g. Rastogi"
+                maxlength="10"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="dpValidateLastName()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Email Address <span class="req">*</span></label>
+              <input
+                id="dpEmail"
+                type="email"
+                placeholder="e.g. icab@gmail.com"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="dpValidateEmail()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Phone Number <span class="req">*</span></label>
+              <div class="relative flex items-center">
+                <div
+                  class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"
+                >
+                  <span class="text-lg mr-2">🇮🇳</span>
+                  <span
+                    class="text-zinc-500 font-bold border-r border-zinc-300 dark:border-zinc-600 pr-3"
+                    >+91</span
+                  >
+                </div>
+                <input
+                  id="dpPhone"
+                  type="tel"
+                  placeholder="1234567890"
+                  maxlength="10"
+                  readonly
+                  class="cursor-not-allowed opacity-80 !pl-[6.5rem]"
+                  oninput="
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    calcDpCompletion();
+                  "
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Date of Birth <span class="req">*</span> (18+ only)</label>
+              <input
+                id="dpDob"
+                type="date"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="calcDpCompletion()"
+              />
+              <small id="dpDobMsg" class="text-zinc-500 text-xs"></small>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <div class="flex gap-3 mt-2 flex-wrap" id="genderGroup">
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    id="gMale"
+                    disabled
+                  />
+                  Male</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    id="gFemale"
+                    disabled
+                  />
+                  Female</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="other"
+                    id="gOther"
+                    disabled
+                  />
+                  Other</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="none"
+                    id="gNone"
+                    disabled
+                  />
+                  Prefer not to say</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Vehicle Information -->
+        <div class="card bg-zinc-50/50 dark:bg-zinc-900/50">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+              🚗 Vehicle Information
+            </h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="form-group">
+              <label>Vehicle Type</label>
+              <select
+                id="dpVehicleType"
+                disabled
+                class="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 opacity-70 cursor-not-allowed border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-300 font-semibold text-sm"
+              >
+                <option value="hatchback">🚗 Hatchback</option>
+                <option value="sedan" selected>🚙 Sedan</option>
+                <option value="suv">🚐 SUV</option>
+                <option value="suv-muv">🚐 SUV/MUV</option>
+                <option value="muv">🚐 MUV</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Vehicle Model</label>
+              <input
+                id="dpVehicle"
+                type="text"
+                placeholder="—"
+                readonly
+                class="cursor-not-allowed opacity-70 bg-zinc-100 dark:bg-zinc-800"
+              />
+            </div>
+            <div class="form-group">
+              <label>Plate Number</label>
+              <input
+                id="dpPlate"
+                type="text"
+                placeholder="—"
+                readonly
+                class="font-mono cursor-not-allowed opacity-70 bg-zinc-100 dark:bg-zinc-800"
+              />
+            </div>
+            <div class="form-group">
+              <label>License Number</label>
+              <input
+                id="dpLicense"
+                type="text"
+                placeholder="—"
+                readonly
+                class="font-mono cursor-not-allowed opacity-70 bg-zinc-100 dark:bg-zinc-800"
+              />
+            </div>
+          </div>
+          <div
+            class="mt-6 p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl flex items-center gap-3 border border-zinc-200 dark:border-zinc-700"
+          >
+            <span class="text-xl">ℹ️</span>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Vehicle details are verified by our team. If you want to change
+              these details, please contact the iCab Admin team via email at
+              <a
+                href="mailto:adminicab@gmail.com"
+                class="text-yellow-600 dark:text-yellow-400 font-bold hover:underline"
+                >adminicab@gmail.com</a
+              >
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. Change Password -->
+        <div class="card">
+          <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+            🔒 Change Password
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="form-group">
+              <label>Current Password</label>
+              <div class="relative">
+                <input
+                  id="dpCurrentPass"
+                  type="password"
+                  placeholder="Enter current password"
+                  class="w-full pr-10"
+                  oninput="dpValidateCurrentPassword()"
+                />
+                <button
+                  type="button"
+                  onclick="togglePwd('dpCurrentPass', 'toggleDpCurrent')"
+                  id="toggleDpCurrent"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small
+                id="dpCurrentPassMsg"
+                class="text-zinc-500 text-xs"
+              ></small>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <div class="relative">
+                <input
+                  id="dpNewPass"
+                  type="password"
+                  placeholder="8+ chars: Upper, lower, number, special"
+                  class="w-full pr-10"
+                  oninput="dpValidateNewPassword()"
+                />
+                <button
+                  type="button"
+                  onclick="togglePwd('dpNewPass', 'toggleDpNew')"
+                  id="toggleDpNew"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small id="dpNewPassMsg" class="text-zinc-500 text-xs"></small>
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <div class="relative">
+                <input
+                  id="dpConfirmPass"
+                  type="password"
+                  placeholder="Repeat new password"
+                  class="w-full pr-10"
+                  oninput="dpValidateConfirmPassword()"
+                />
+                <button
+                  type="button"
+                  onclick="togglePwd('dpConfirmPass', 'toggleDpConfirm')"
+                  id="toggleDpConfirm"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small
+                id="dpConfirmPassMsg"
+                class="text-zinc-500 text-xs"
+              ></small>
+            </div>
+          </div>
+          <div
+            id="dpPassMsg"
+            class="hidden text-sm font-semibold p-3 rounded-xl mt-2"
+          ></div>
+          <div class="flex justify-center mt-6">
+            <button
+              onclick="changeDriverPassword()"
+              class="px-10 py-4 bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-black rounded-2xl transition shadow-xl w-full sm:w-auto min-w-[240px]"
+            >
+              🔑 Update Password
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Account Management -->
+        <div class="card border-2 border-red-200 dark:border-red-900/50">
+          <h3
+            class="text-lg font-bold mb-2 flex items-center gap-2 text-red-600 dark:text-red-400"
+          >
+            ⚠️ Account Management
+          </h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+            If you wish to close your account, all your data will be
+            <strong class="text-red-500">permanently removed</strong>.
+          </p>
+          <div class="flex justify-center">
+            <button
+              onclick="deleteDriverAccount()"
+              class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all duration-200 shadow-md hover:shadow-red-600/30 flex items-center gap-2"
+            >
+              🗑️ Close My Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Cropper Modal -->
+    <div
+      id="dpCropModal"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md hidden"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-lg mx-4 rounded-3xl overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div
+          class="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center"
+        >
+          <h3 class="text-xl font-black">✂️ Crop Profile Photo</h3>
+          <button
+            onclick="closeDpCropModal()"
+            class="text-2xl text-zinc-400 hover:text-zinc-600"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="p-4 bg-zinc-50 dark:bg-black/20">
+          <div class="max-h-[60vh] overflow-hidden rounded-xl">
+            <img id="dpCropImage" src="" class="max-w-full block" />
+          </div>
+        </div>
+        <div class="p-6 flex gap-3">
+          <button
+            onclick="closeDpCropModal()"
+            class="flex-1 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="applyDpCrop()"
+            class="flex-1 py-3.5 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-2xl transition shadow-lg shadow-yellow-400/20"
+          >
+            ✅ Save Photo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Footer -->
+    <div id="footer-container"></div>
+
+    <script src="assets/js/loader.js?v=14"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=14"></script>
+    <script src="assets/js/main.js?v=14"></script>
+    <script src="assets/js/driver-profile.js?v=14"></script>
+    <script src="assets/js/notifications.js?v=14"></script>
+  </body>
+</html>

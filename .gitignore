@@ -1,0 +1,131 @@
+# ========== PYTHON ==========
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.venv
+.virtualenv
+bin/
+lib/
+pyvenv.cfg
+
+# ========== DJANGO ==========
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/static
+/staticfiles
+.django_secret
+
+# ========== IDE & EDITORS ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+*.code-workspace
+
+# ========== ENVIRONMENT & CONFIG ==========
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# ========== OS ==========
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+*.exe
+.directory
+
+# ========== BACKUP & TEMP FILES ==========
+*.bak
+*.backup
+*.tmp
+*.temp
+*.orig
+*.swp~
+*~
+.~*
+
+# ========== NODE & FRONTEND ==========
+node_modules/
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+package-lock.json
+pnpm-lock.yaml
+dist/
+frontend-react/dist/
+.next/
+.nuxt/
+out/
+
+# ========== TEST & COVERAGE ==========
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+
+# ========== DOCUMENTATION ==========
+# (Keep README.md files, only ignore generation artifacts)
+site/
+docs/_build/
+
+# ========== BUILD ARTIFACTS ==========
+*.o
+*.a
+*.lib
+*.dll
+*.dylib
+
+# ========== MISC ==========
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+*.pid
+.lock
+.session
+Makefile.local

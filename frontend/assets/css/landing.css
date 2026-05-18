@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════════
+   landing.css — Landing page specific styles for iCab
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Navbar Logo Underline Animation ────────────────── */
+.logo-underline {
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 3px;
+  background: #eab308;
+  transition: width 0.3s ease;
+}
+
+.logo-wrap:hover .logo-underline {
+  width: 100%;
+}
+
+/* ─── Hero Badge ─────────────────────────────────────── */
+.hero-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  background: #fde047;
+  color: #713f12;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.dark .hero-badge {
+  background: rgba(202, 138, 4, 0.2);
+  color: #fde047;
+}
+
+/* ─── Feature Cards ──────────────────────────────────── */
+.feature-card {
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  text-align: center;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.dark .feature-card {
+  background: #18181b;
+  /* zinc-900 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.feature-card:hover {
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.feature-card .feature-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+/* ─── Hero Image ─────────────────────────────────────── */
+.hero-image {
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 480px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.hero-image:hover {
+  transform: scale(1.03);
+}

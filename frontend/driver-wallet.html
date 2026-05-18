@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab Driver - Wallet & Earnings</title>
+    <meta
+      name="description"
+      content="Manage your iCab driver earnings — withdraw funds, view ride payouts, and track performance."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/wallet.css" />
+    <link rel="stylesheet" href="assets/css/driver.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-extrabold tracking-tight">Earnings Wallet</h1>
+        <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+          Track your ride payouts, manage balance and withdraw your earnings.
+        </p>
+      </div>
+
+      <!-- ── Row 1: Balance Card + Stats ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Balance Card (spans 2 cols) -->
+        <div class="lg:col-span-2">
+          <div class="balance-card relative overflow-hidden" id="balanceCardWrap">
+            <!-- Localized Frozen Overlay for Balance Card -->
+            <div id="frozenOverlayBalance" class="frozen-overlay active hidden">
+                <span class="text-3xl">❄️</span>
+                <p class="text-sm font-bold">Withdrawals Locked</p>
+                <button onclick="toggleFreeze()" class="mt-2 px-4 py-1.5 bg-white text-black text-xs font-black rounded-lg">Unfreeze</button>
+            </div>
+
+            <div
+              class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-[1]"
+            >
+              <div>
+                <p
+                  class="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-2"
+                >
+                  Withdrawable Balance
+                </p>
+                <div class="balance-amount">
+                  ₹ <span id="walletBalance">0.00</span>
+                </div>
+                <div class="flex items-center gap-3 mt-4">
+                  <span id="pinBadge" class="kyc-pending">⚠ No PIN Required</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 sm:items-end relative z-[1]">
+                <!-- Withdraw -->
+                <button
+                  id="withdrawBtn"
+                  onclick="initiateWithdraw()"
+                  class="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black text-sm font-black border border-white transition hover:bg-zinc-100 shadow-lg"
+                >
+                  🏦 Withdraw Earnings
+                </button>
+                <button
+                  id="freezeBtn"
+                  onclick="toggleFreeze()"
+                  class="flex items-center gap-2 px-6 py-3 rounded-xl bg-orange-500/10 text-orange-500 text-sm font-black border border-orange-500/20 transition hover:bg-orange-500/20"
+                >
+                  ❄️ Freeze Wallet
+                </button>
+                <p class="text-[10px] text-white/50 italic mr-2">Minimum withdrawal ₹100.00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lifetime Stats Card -->
+        <div class="card h-full flex flex-col justify-center">
+          <h3 class="text-xs font-bold text-zinc-500 uppercase mb-4">📈 Performance</h3>
+          <div class="space-y-4">
+            <div>
+                <p class="text-sm text-zinc-400">Total Lifetime Earnings</p>
+                <p class="text-2xl font-black text-green-500">₹ <span id="totalLifetimeEarnings">0.00</span></p>
+            </div>
+            <div>
+                <p class="text-sm text-zinc-400">Completed Rides</p>
+                <p class="text-2xl font-black" id="totalRidesCount">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Row 2: Add Money (Simulation) + History ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="lg:col-span-2 card relative overflow-hidden">
+          <!-- Localized Frozen Overlay for Add Money Card -->
+          <div id="frozenOverlayAdd" class="frozen-overlay active hidden">
+              <span class="text-3xl">❄️</span>
+              <p class="text-lg font-black">Add Money Locked</p>
+              <p class="text-xs text-zinc-400 mb-4">Unfreeze wallet to top-up</p>
+              <button onclick="toggleFreeze()" class="px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold rounded-xl">Unfreeze Wallet</button>
+          </div>
+
+          <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+              <span>➕</span> Add Money
+          </h3>
+          
+          <!-- Quick Amounts -->
+          <div class="flex flex-wrap gap-3 mb-5">
+            <button class="quick-add-btn" onclick="setAmount(100)">+ ₹100</button>
+            <button class="quick-add-btn" onclick="setAmount(250)">+ ₹250</button>
+            <button class="quick-add-btn" onclick="setAmount(500)">+ ₹500</button>
+            <button class="quick-add-btn" onclick="setAmount(1000)">+ ₹1000</button>
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Amount (₹)</label>
+            <input
+              id="addAmount"
+              type="number"
+              min="1"
+              placeholder="Enter amount"
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 outline-none focus:ring-2 focus:ring-blue-400 text-lg font-bold transition"
+            />
+          </div>
+
+          <!-- Payment Method -->
+          <div class="mb-5">
+            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Payment Method</label>
+            <div class="flex flex-wrap gap-3" id="methodPills">
+              <label class="method-pill selected" id="pill-upi">
+                <input type="radio" name="payMethod" value="upi" checked onchange="updatePills('upi')" /> 📱 UPI
+              </label>
+              <label class="method-pill" id="pill-card">
+                <input type="radio" name="payMethod" value="card" onchange="updatePills('card')" /> 💳 Card
+              </label>
+            </div>
+          </div>
+
+          <button
+            onclick="addMoney()"
+            class="w-full py-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white font-black text-lg rounded-2xl transition hover:scale-[1.01]"
+          >
+            Add Funds
+          </button>
+        </div>
+
+        <!-- Transaction PIN Security -->
+        <div class="card bg-zinc-50 dark:bg-zinc-800/20 border-zinc-200 dark:border-zinc-800">
+           <div class="flex items-center justify-between mb-4">
+               <h3 class="text-lg font-bold flex items-center gap-2">
+                   <span>🔑</span> Transaction PIN
+               </h3>
+               <span id="pinBadgeStatus" class="kyc-pending">Not Set</span>
+           </div>
+           
+           <p class="text-xs text-zinc-500 mb-6">Authorize your earnings withdrawals and secure your wallet with a 4-digit PIN.</p>
+           
+           <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 mb-6">
+               <div class="flex items-center gap-3">
+                   <div class="text-2xl">🛡️</div>
+                   <div>
+                       <p class="text-xs font-bold" id="pinStatusMsg">PIN Not Set</p>
+                       <p class="text-[10px] text-zinc-400">Withdrawals are currently restricted.</p>
+                   </div>
+               </div>
+           </div>
+
+           <button
+             id="setPinBtn"
+             onclick="openPinModal()"
+             class="w-full py-3 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white font-bold text-sm rounded-xl transition hover:opacity-90"
+           >
+             Set Transaction PIN
+           </button>
+        </div>
+      </div>
+
+      <!-- ── Row 3: History + Earnings Insights ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Transaction History (1 Col) -->
+        <div class="card h-full max-h-[500px] flex flex-col">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold">📋 History</h3>
+          </div>
+          <div
+            id="transactionList"
+            class="overflow-y-auto flex-1 pr-2 custom-scrollbar"
+          >
+            <p class="text-center py-10 text-zinc-400">No transactions yet.</p>
+          </div>
+        </div>
+
+        <!-- Earnings Insights (2 Cols) -->
+        <div class="lg:col-span-2 card">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+              <span>📊</span> Earnings Insights
+            </h3>
+            <div class="px-3 py-1 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full uppercase tracking-widest">Live Feed</div>
+          </div>
+          <div class="h-[300px] w-full">
+            <canvas id="earningsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── Withdraw Amount Modal ── -->
+    <div
+      id="withdrawAmountModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-12 h-12 bg-blue-400/20 text-blue-500 rounded-2xl flex items-center justify-center text-2xl"
+          >
+            🏦
+          </div>
+          <div>
+            <h2 class="text-xl font-black">Withdraw Earnings</h2>
+            <p class="text-xs text-zinc-500">Transfer from wallet to bank</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label
+              class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2"
+              >Amount to Withdraw (₹)</label
+            >
+            <input
+              id="withdrawAmountInput"
+              type="number"
+              min="100"
+              autocomplete="off"
+              placeholder="100.00"
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-blue-400 text-2xl font-black transition"
+            />
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-8">
+          <button
+            onclick="closeWithdrawAmountModal()"
+            class="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 rounded-xl font-bold text-sm transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="submitWithdrawAmount()"
+            class="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-sm transition"
+          >
+            Next Step
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Payment Verification Modal (Withdrawal) ── -->
+    <div
+      id="paymentVerifyModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            id="methodIcon"
+            class="w-12 h-12 bg-blue-400/20 text-blue-500 rounded-2xl flex items-center justify-center text-2xl"
+          >
+            📱
+          </div>
+          <div>
+            <h2 id="authModalTitle" class="text-xl font-black">
+              Verify Withdrawal
+            </h2>
+            <p class="text-xs text-zinc-500">Authorize your payout</p>
+          </div>
+        </div>
+
+        <div id="authContent" class="space-y-4">
+            <!-- Dynamically injected fields based on method -->
+        </div>
+
+        <p id="authError" class="hidden text-red-500 text-xs mt-4 font-semibold text-center"></p>
+
+        <div class="flex gap-3 mt-8">
+          <button
+            onclick="closePaymentAuthModal()"
+            class="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 rounded-xl font-bold text-sm transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="submitPaymentAuth()"
+            class="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-sm transition"
+          >
+            Verify & Proceed
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Transaction PIN Modal ── -->
+    <div id="pinModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border border-zinc-200 dark:border-zinc-800 scale-in text-center">
+        <div class="w-20 h-20 bg-blue-500/10 text-blue-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6">🔑</div>
+        <h2 id="pinModalTitle" class="text-2xl font-black mb-2">Transaction PIN</h2>
+        <p id="pinModalDesc" class="text-sm text-zinc-500 mb-8">Enter your 4-digit PIN to authorize this action.</p>
+        
+        <!-- PIN Input -->
+        <div class="flex justify-center gap-3 mb-8">
+            <input type="password" maxlength="1" id="digit1" oninput="handlePinInput(this, 'digit2')" class="pin-digit-input" autocomplete="off" />
+            <input type="password" maxlength="1" id="digit2" oninput="handlePinInput(this, 'digit3')" class="pin-digit-input" autocomplete="off" />
+            <input type="password" maxlength="1" id="digit3" oninput="handlePinInput(this, 'digit4')" class="pin-digit-input" autocomplete="off" />
+            <input type="password" maxlength="1" id="digit4" oninput="handlePinInput(this, '')" class="pin-digit-input" autocomplete="off" />
+        </div>
+
+        <p id="pinError" class="hidden text-red-500 text-xs font-bold mb-6">Incorrect PIN. Please try again.</p>
+
+        <div class="flex flex-col gap-3">
+            <button onclick="submitPin()" class="w-full py-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white font-black rounded-2xl transition hover:opacity-90">Confirm PIN</button>
+            <button onclick="closePinModal()" class="w-full py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-2xl font-bold transition hover:bg-zinc-200 dark:hover:bg-zinc-700">Go Back</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/driver-wallet.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+  </body>
+</html>

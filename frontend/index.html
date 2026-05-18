@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Taxi Booking</title>
+    <meta
+      name="description"
+      content="iCab — Book a fast, safe and affordable taxi ride anytime, anywhere. Verified drivers and real-time tracking."
+    />
+
+    <!-- Page Loader (must be FIRST script) -->
+    <script src="assets/js/page-loader.js"></script>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/landing.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-white transition duration-300 pt-16 md:pt-20 flex flex-col min-h-screen"
+  >
+    <!-- Page Components (injected by loader.js) -->
+    <div id="header-container"></div>
+    <div id="hero-container"></div>
+    <div id="features-container"></div>
+    <div id="footer-container"></div>
+
+    <!-- LOGIN MODAL -->
+    <div
+      id="loginModal"
+      class="fixed inset-0 bg-black/50 hidden justify-center items-center opacity-0 transition-opacity duration-300 z-50"
+    >
+      <div
+        id="loginBox"
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative transform scale-95 transition-all duration-300"
+      >
+        <button
+          onclick="closeLogin()"
+          class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        >
+          &times;
+        </button>
+
+        <h2 class="text-2xl font-bold mb-2 text-center">Welcome Back 👋</h2>
+        <p class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          Login to your iCab account
+        </p>
+
+        <div
+          id="loginError"
+          class="hidden mb-4 text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-4"
+        ></div>
+
+        <div id="loginInputs" class="space-y-4">
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="Email address"
+            autocomplete="off"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+          <!-- Password with show/hide -->
+          <div class="relative">
+            <input
+              id="loginPassword"
+              type="password"
+              placeholder="Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('loginPassword', 'eyeLogin')"
+              id="eyeLogin"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+            >
+              👁️
+            </button>
+          </div>
+
+          <div class="flex justify-center">
+            <span
+              onclick="openForgotPassword()"
+              class="text-sm text-yellow-500 hover:text-yellow-600 cursor-pointer font-semibold"
+            >
+              Forgot Password?
+            </span>
+          </div>
+          <button
+            type="button"
+            id="loginBtn"
+            onclick="loginUser()"
+            class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl transition duration-200"
+          >
+            Login
+          </button>
+        </div>
+
+        <!-- Mismatch Choice View -->
+        <div id="loginChoiceView" class="hidden space-y-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
+            Multiple accounts found. Please select which one to access:
+          </p>
+          <div id="loginChoiceList" class="space-y-3">
+            <!-- Choices injected by JS -->
+          </div>
+          <button
+            onclick="backToLoginInputs()"
+            class="w-full py-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-white"
+          >
+            Go Back
+          </button>
+        </div>
+
+        <p class="text-center mt-4 text-sm text-gray-500">
+          Don't have an account?
+          <span
+            onclick="switchToRegister()"
+            class="underline cursor-pointer font-semibold text-yellow-500"
+            >Register as User →</span
+          >
+        </p>
+        <p class="text-center mt-2 text-sm text-gray-500">
+          Want to drive with us?
+          <span
+            onclick="openDriverRegister()"
+            class="underline cursor-pointer font-semibold text-green-500"
+            >Register as Driver →</span
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- REGISTER MODAL -->
+    <div
+      id="registerModal"
+      class="fixed inset-0 bg-black/50 hidden justify-center items-start overflow-y-auto opacity-0 transition-opacity duration-300 z-50 py-10 px-4"
+    >
+      <div
+        id="registerBox"
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative transform scale-95 transition-all duration-300 mx-auto"
+      >
+        <button
+          onclick="closeRegister()"
+          class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        >
+          &times;
+        </button>
+
+        <h2 class="text-2xl font-bold mb-2 text-center">Create Your Account</h2>
+        <p class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          Join iCab and ride smarter
+        </p>
+
+        <div
+          id="registerError"
+          class="hidden mb-4 text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-4"
+        ></div>
+        <div
+          id="registerSuccess"
+          class="hidden mb-4 text-green-600 text-sm text-center bg-green-50 dark:bg-green-900/20 rounded-lg py-2 px-4"
+        ></div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <input
+                id="registerFirstName"
+                type="text"
+                placeholder="First Name"
+                autocomplete="off"
+                maxlength="10"
+                inputmode="text"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+              />
+              <p
+                id="firstNameError"
+                class="hidden text-[8px] text-red-500 font-bold px-1 mt-1"
+              >
+                Only alphabets (max 10)
+              </p>
+            </div>
+            <div>
+              <input
+                id="registerSurname"
+                type="text"
+                placeholder="Surname"
+                autocomplete="off"
+                maxlength="10"
+                inputmode="text"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+              />
+              <p
+                id="surnameError"
+                class="hidden text-[8px] text-red-500 font-bold px-1 mt-1"
+              >
+                Only alphabets (max 10)
+              </p>
+            </div>
+          </div>
+          <input
+            id="registerEmail"
+            type="email"
+            placeholder="Email address"
+            autocomplete="off"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+
+          <!-- Email Validation Error -->
+          <div
+            id="registerEmailError"
+            class="hidden text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 text-center"
+          >
+            ❌ This email is already registered. Please use a different email.
+          </div>
+
+          <!-- Strict Mobile Number Format -->
+          <div class="relative flex items-center">
+            <div
+              class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"
+            >
+              <span class="text-lg mr-2">🇮🇳</span>
+              <span
+                class="text-gray-500 font-bold border-r border-gray-300 dark:border-gray-600 pr-3"
+                >+91</span
+              >
+            </div>
+            <input
+              id="registerPhone"
+              type="tel"
+              placeholder="Mobile Number"
+              autocomplete="off"
+              pattern="[0-9]*"
+              inputmode="numeric"
+              maxlength="10"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full pl-[6.5rem] pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 font-semibold tracking-wider placeholder-gray-400"
+            />
+          </div>
+
+          <!-- Phone Validation Error -->
+          <div
+            id="registerPhoneError"
+            class="hidden text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 text-center"
+          >
+            ❌ This phone is already registered. Please use a different phone.
+          </div>
+
+          <!-- Password with show/hide -->
+          <div class="relative">
+            <input
+              id="registerPassword"
+              type="password"
+              placeholder="Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('registerPassword', 'eyeReg1')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+              id="eyeReg1"
+            >
+              👁️
+            </button>
+          </div>
+
+          <!-- Password Strength UI -->
+          <div class="mt-2 space-y-2 text-xs">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-gray-500 font-medium"
+                >Strength:
+                <span id="regStrengthLabel" class="font-bold">None</span></span
+              >
+            </div>
+            <div
+              class="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-1"
+            >
+              <div
+                id="regStrengthBar"
+                class="h-full w-0 transition-all duration-300"
+              ></div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-[10px]">
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="reg-crit-len"
+              >
+                ❌ 8-20 chars
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="reg-crit-upper"
+              >
+                ❌ Uppercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="reg-crit-lower"
+              >
+                ❌ Lowercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="reg-crit-num"
+              >
+                ❌ Number
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="reg-crit-spec"
+              >
+                ❌ Special Symbol
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="relative">
+            <input
+              id="registerConfirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('registerConfirmPassword', 'eyeReg2')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+              id="eyeReg2"
+            >
+              👁️
+            </button>
+          </div>
+          <p
+            id="regConfirmMsg"
+            class="hidden text-[10px] text-red-500 font-bold px-1 mt-[-8px]"
+          >
+            ❌ Passwords do not match
+          </p>
+          <button
+            type="button"
+            id="registerUserBtn"
+            onclick="registerUser()"
+            class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl transition duration-200"
+          >
+            Register as User
+          </button>
+        </div>
+
+        <p class="text-center mt-4 text-sm text-gray-500">
+          Already have an account?
+          <span
+            onclick="switchToLogin()"
+            class="underline cursor-pointer font-semibold text-yellow-500"
+            >Login</span
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- DRIVER REGISTER MODAL -->
+    <div
+      id="driverRegModal"
+      class="fixed inset-0 bg-black/50 hidden justify-center items-start overflow-y-auto opacity-0 transition-opacity duration-300 z-50 py-8 px-4"
+    >
+      <div
+        id="driverRegBox"
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative transform scale-95 transition-all duration-300 mx-auto"
+      >
+        <button
+          onclick="closeDriverRegister()"
+          class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        >
+          &times;
+        </button>
+
+        <h2 class="text-2xl font-bold mb-1 text-center">🚗 Become a Driver</h2>
+        <p class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          Join the iCab driver community and start earning
+        </p>
+
+        <div
+          id="driverRegError"
+          class="hidden mb-4 text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-4"
+        ></div>
+        <div
+          id="driverRegSuccess"
+          class="hidden mb-4 text-green-600 text-sm text-center bg-green-50 dark:bg-green-900/20 rounded-lg py-2 px-4"
+        ></div>
+
+        <div class="space-y-4">
+          <!-- Personal Info -->
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400">
+            Personal Info
+          </p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <input
+                id="driverFirstName"
+                type="text"
+                placeholder="First Name"
+                autocomplete="off"
+                maxlength="10"
+                inputmode="text"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+              />
+              <p
+                id="driverFirstNameError"
+                class="hidden text-[8px] text-red-500 font-bold px-1 mt-1"
+              >
+                Only alphabets (max 10)
+              </p>
+            </div>
+            <div>
+              <input
+                id="driverSurname"
+                type="text"
+                placeholder="Surname"
+                autocomplete="off"
+                maxlength="10"
+                inputmode="text"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+              />
+              <p
+                id="driverSurnameError"
+                class="hidden text-[8px] text-red-500 font-bold px-1 mt-1"
+              >
+                Only alphabets (max 10)
+              </p>
+            </div>
+          </div>
+          <input
+            id="driverEmail"
+            type="email"
+            placeholder="Email Address"
+            autocomplete="off"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+
+          <!-- Email Validation Error -->
+          <div
+            id="driverEmailError"
+            class="hidden text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 text-center"
+          >
+            ❌ This email is already registered as a driver. Please use a
+            different email.
+          </div>
+
+          <!-- Strict Mobile Number Format -->
+          <div class="relative flex items-center">
+            <div
+              class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"
+            >
+              <span class="text-lg mr-2">🇮🇳</span>
+              <span
+                class="text-gray-500 font-bold border-r border-gray-300 dark:border-gray-600 pr-3"
+                >+91</span
+              >
+            </div>
+            <input
+              id="driverPhone"
+              type="tel"
+              placeholder="Phone Number"
+              autocomplete="off"
+              pattern="[0-9]*"
+              inputmode="numeric"
+              maxlength="10"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full pl-[6.5rem] pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 font-semibold tracking-wider placeholder-gray-400"
+            />
+          </div>
+
+          <!-- Phone Validation Error -->
+          <div
+            id="driverPhoneError"
+            class="hidden text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-3 text-center"
+          >
+            ❌ This phone is already registered as a driver. Please use a
+            different phone.
+          </div>
+
+          <!-- Create Password with show/hide -->
+          <div class="relative">
+            <input
+              id="driverPassword"
+              type="password"
+              placeholder="Create Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('driverPassword', 'eyeDrv1')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+              id="eyeDrv1"
+            >
+              👁️
+            </button>
+          </div>
+
+          <!-- Driver Password Strength UI -->
+          <div class="mt-2 space-y-2 text-xs">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-gray-500 font-medium"
+                >Strength:
+                <span id="drvStrengthLabel" class="font-bold">None</span></span
+              >
+            </div>
+            <div
+              class="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-1"
+            >
+              <div
+                id="drvStrengthBar"
+                class="h-full w-0 transition-all duration-300"
+              ></div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-[10px]">
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="drv-crit-len"
+              >
+                ❌ 8-20 chars
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="drv-crit-upper"
+              >
+                ❌ Uppercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="drv-crit-lower"
+              >
+                ❌ Lowercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="drv-crit-num"
+              >
+                ❌ Number
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="drv-crit-spec"
+              >
+                ❌ Special Symbol
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="relative">
+            <input
+              id="driverConfirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('driverConfirmPassword', 'eyeDrv2')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+              id="eyeDrv2"
+            >
+              👁️
+            </button>
+          </div>
+          <p
+            id="drvConfirmMsg"
+            class="hidden text-[10px] text-red-500 font-bold px-1 mt-[-8px]"
+          >
+            ❌ Passwords do not match
+          </p>
+
+          <!-- Car / Vehicle Info — Searchable -->
+          <p
+            class="text-xs font-bold uppercase tracking-wider text-gray-400 pt-2"
+          >
+            Car / Vehicle Info
+          </p>
+
+          <!-- Searchable Car Model Input -->
+          <div class="relative" id="carSearchWrapper">
+            <input
+              id="driverVehicle"
+              type="text"
+              placeholder="Car Model (e.g. Maruti Swift)"
+              autocomplete="off"
+              oninput="filterCarSuggest()"
+              class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+            />
+            <!-- Suggest Dropdown -->
+            <ul id="carSuggestList" class="car-suggest-dropdown"></ul>
+          </div>
+          <input
+            id="driverPlate"
+            type="text"
+            placeholder="Vehicle Number Plate (e.g. GJ04BQ3010)"
+            maxlength="10"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase tracking-wider"
+          />
+          <input
+            id="driverLicense"
+            type="text"
+            placeholder="Driving License Number (e.g. GJ1234567890123)"
+            maxlength="15"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 uppercase tracking-wider"
+          />
+
+          <button
+            type="button"
+            id="registerDriverBtn"
+            onclick="registerDriver()"
+            class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl transition duration-200"
+          >
+            🚗 Register as Driver
+          </button>
+
+          <p class="text-center mt-2 text-sm text-gray-500">
+            Already have an account?
+            <span
+              onclick="
+                var uid = localStorage.getItem('icab_user_id');
+                var role = localStorage.getItem('icab_user_role');
+                if (uid) {
+                  window.location.href =
+                    role === 'driver' ? 'driver.html' : 'dashboard.html';
+                } else {
+                  closeDriverRegister();
+                  openLogin();
+                }
+              "
+              class="underline cursor-pointer font-semibold text-yellow-500"
+              >Login</span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div
+      id="forgotPasswordModal"
+      class="fixed inset-0 bg-black/50 hidden justify-center items-center overflow-y-auto opacity-0 transition-opacity duration-300 z-50"
+    >
+      <div
+        id="forgotPasswordBox"
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative transform scale-95 transition-all duration-300 mx-auto my-auto"
+      >
+        <button
+          onclick="closeForgotPassword()"
+          class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        >
+          &times;
+        </button>
+
+        <h2
+          class="text-2xl font-bold mb-2 text-center text-gray-900 dark:text-white"
+        >
+          Reset Password
+        </h2>
+        <p
+          class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm"
+          id="forgotDesc"
+        >
+          Enter your email or phone number to receive an OTP.
+        </p>
+
+        <div
+          id="forgotError"
+          class="hidden mb-4 text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 rounded-lg py-2 px-4"
+        ></div>
+        <div
+          id="forgotSuccess"
+          class="hidden mb-4 text-green-600 text-sm text-center bg-green-50 dark:bg-green-900/20 rounded-lg py-2 px-4"
+        ></div>
+
+        <!-- Step 1: Select Method & Request OTP -->
+        <div id="forgotStep1" class="space-y-4">
+          <!-- Contact Type Selection -->
+          <div class="flex gap-2 mb-4">
+            <button
+              type="button"
+              id="forgotEmailBtn"
+              onclick="forgotSelectMethod('email')"
+              class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm transition duration-200 bg-yellow-400 text-black hover:bg-yellow-500"
+            >
+              📧 Email
+            </button>
+            <button
+              type="button"
+              id="forgotPhoneBtn"
+              onclick="forgotSelectMethod('phone')"
+              class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm transition duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
+              📱 Phone
+            </button>
+          </div>
+
+          <!-- Email Input -->
+          <input
+            id="forgotEmailInput"
+            type="email"
+            placeholder="Enter your email address"
+            autocomplete="off"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+
+          <!-- Phone Input -->
+          <input
+            id="forgotPhoneInput"
+            type="tel"
+            placeholder="Enter 10-digit mobile number"
+            autocomplete="off"
+            inputmode="numeric"
+            maxlength="10"
+            pattern="[0-9]*"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 hidden"
+          />
+
+          <button
+            type="button"
+            onclick="sendOtp()"
+            class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl transition duration-200"
+          >
+            Send OTP
+          </button>
+        </div>
+
+        <!-- Step 2: Verify OTP & Reset -->
+        <div id="forgotStep2" class="space-y-4 hidden">
+          <!-- Account Type Selector (only shown if multi-accounts found) -->
+          <div
+            id="accountTypeSelector"
+            class="hidden mb-4 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden"
+          >
+            <div
+              class="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs font-bold text-gray-500 uppercase tracking-wider"
+            >
+              Select Account to Reset
+            </div>
+            <select
+              id="forgotAccountSelect"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-800 dark:text-white focus:outline-none text-sm cursor-pointer"
+            >
+              <!-- Options injected by JS -->
+            </select>
+          </div>
+          <input
+            id="forgotOtp"
+            type="text"
+            placeholder="Enter OTP (Test: 123456)"
+            autocomplete="off"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="6"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 tracking-widest text-center font-bold"
+          />
+
+          <div class="relative">
+            <input
+              id="newPassword"
+              type="password"
+              placeholder="New Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('newPassword', 'eyeNew')"
+              id="eyeNew"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+            >
+              👁️
+            </button>
+          </div>
+
+          <!-- Forgot Password Strength UI -->
+          <div class="mt-2 space-y-2 text-xs">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-gray-500 font-medium"
+                >Strength:
+                <span id="forStrengthLabel" class="font-bold">None</span></span
+              >
+            </div>
+            <div
+              class="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-1"
+            >
+              <div
+                id="forStrengthBar"
+                class="h-full w-0 transition-all duration-300"
+              ></div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-[10px]">
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="for-crit-len"
+              >
+                ❌ 8-20 chars
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="for-crit-upper"
+              >
+                ❌ Uppercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="for-crit-lower"
+              >
+                ❌ Lowercase
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="for-crit-num"
+              >
+                ❌ Number
+              </div>
+              <div
+                class="flex items-center gap-1 text-gray-400"
+                id="for-crit-spec"
+              >
+                ❌ Special Symbol
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-time Validation Errors -->
+          <div
+            id="passwordValidationError"
+            class="hidden mb-4 text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg py-3 px-4 space-y-1"
+          >
+            <!-- Error messages injected by JS -->
+          </div>
+
+          <div class="relative">
+            <input
+              id="confirmNewPassword"
+              type="password"
+              placeholder="Confirm New Password"
+              autocomplete="off"
+              maxlength="20"
+              class="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
+            />
+            <button
+              type="button"
+              onclick="togglePwd('confirmNewPassword', 'eyeConfirmNew')"
+              id="eyeConfirmNew"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-500 transition text-lg"
+            >
+              👁️
+            </button>
+          </div>
+          <p
+            id="forConfirmMsg"
+            class="hidden text-[10px] text-red-500 font-bold px-1 mt-[-8px]"
+          >
+            ❌ Passwords do not match
+          </p>
+          <button
+            type="button"
+            onclick="verifyOtpAndReset()"
+            class="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-green-500/30"
+          >
+            Verify & Reset Password
+          </button>
+          <button
+            type="button"
+            onclick="backToForgotStep1()"
+            class="w-full py-2 bg-transparent text-gray-500 text-sm hover:text-gray-700 dark:hover:text-gray-300 font-semibold"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+    <script src="assets/js/register.js?v=2"></script>
+  </body>
+</html>

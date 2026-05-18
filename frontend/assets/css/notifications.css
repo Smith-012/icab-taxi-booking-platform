@@ -1,0 +1,90 @@
+/* ─── Notification Page Styles ────────────────────────────── */
+
+/* Filter Buttons */
+.notif-filter-btn {
+  padding: 8px 20px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  color: #71717a;
+  transition: all 0.2s ease;
+}
+
+.dark .notif-filter-btn {
+  background: #18181b;
+  border-color: #27272a;
+  color: #a1a1aa;
+}
+
+.notif-filter-btn:hover {
+  background: #f4f4f5;
+}
+
+.dark .notif-filter-btn:hover {
+  background: #27272a;
+}
+
+.notif-filter-btn.active {
+  background: #eab308;
+  border-color: #eab308;
+  color: #000;
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
+}
+
+/* Notification Cards (Full Page) */
+.notif-card {
+  background: #fff;
+  border: 1px solid #f4f4f5;
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .notif-card {
+  background: #18181b;
+  border-color: #27272a;
+}
+
+.notif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-color: #e4e4e7;
+}
+
+.dark .notif-card:hover {
+  border-color: #3f3f46;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.notif-card.unread::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #eab308;
+}
+
+/* Notification Card Icon */
+.notif-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ─── Premium Notification Card V2 (Polished) ─────────────── */
+/* Simplified clean design - no complex gradients or animations */

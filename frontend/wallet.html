@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Wallet</title>
+    <meta
+      name="description"
+      content="Manage your iCab wallet — add money, view transactions, track spending."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/wallet.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-extrabold tracking-tight">My Wallet</h1>
+        <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+          Manage your balance, transactions and payment preferences.
+        </p>
+      </div>
+
+      <!-- ── Row 1: Balance Card + Transaction PIN ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Balance Card (spans 2 cols) -->
+        <div class="lg:col-span-2">
+          <div class="balance-card relative" id="balanceCardWrap">
+            <!-- Frozen Overlay -->
+            <div id="frozenOverlay" class="frozen-overlay active hidden">
+              <span class="text-5xl">❄️</span>
+              <p class="text-xl font-black">Wallet Frozen</p>
+              <p class="text-sm text-zinc-300">Unfreeze to make transactions</p>
+              <button
+                onclick="toggleFreeze()"
+                class="mt-2 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl"
+              >
+                Unfreeze Wallet
+              </button>
+            </div>
+
+            <div
+              class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-[1]"
+            >
+              <div>
+                <p
+                  class="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-2"
+                >
+                  Available Balance
+                </p>
+                <div class="balance-amount">
+                  ₹ <span id="walletBalance">0.00</span>
+                </div>
+                <div class="flex items-center gap-3 mt-4">
+                  <span id="pinBadge" class="kyc-pending">⚠ PIN Not Set</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 sm:items-end relative z-[1]">
+                <!-- Freeze Toggle -->
+                <button
+                  onclick="toggleFreeze()"
+                  id="freezeBtn"
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition border border-white/10"
+                >
+                  ❄️ Freeze Wallet
+                </button>
+                <!-- Withdraw -->
+                <button
+                  id="withdrawBtn"
+                  onclick="initiateWithdraw()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-zinc-400 text-sm font-semibold border border-white/10 cursor-not-allowed transition hover:bg-white/20"
+                  title="Available after Transaction PIN Set"
+                >
+                  🏦 Withdraw
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction PIN Card -->
+        <div class="card h-full">
+          <h3 class="text-lg font-bold mb-4">🔐 Transaction PIN</h3>
+          <p id="pinStatusMsg" class="text-xs text-zinc-500 mb-6">
+            Set a 4-digit PIN to authorize payments and add funds.
+          </p>
+          <button
+            onclick="openPinModal()"
+            id="setPinBtn"
+            class="w-full py-3 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white font-black rounded-xl text-sm transition hover:scale-[1.02]"
+          >
+            Set Transaction PIN
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Row 2: Add Money + Saved Methods ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Add Money (spans 2) -->
+        <div class="lg:col-span-2 card">
+          <h3 class="text-lg font-bold mb-5">➕ Add Money</h3>
+
+          <!-- Quick Amounts -->
+          <div class="flex flex-wrap gap-3 mb-5">
+            <button class="quick-add-btn" onclick="setAmount(100)">
+              + ₹100
+            </button>
+            <button class="quick-add-btn" onclick="setAmount(250)">
+              + ₹250
+            </button>
+            <button class="quick-add-btn" onclick="setAmount(500)">
+              + ₹500
+            </button>
+            <button class="quick-add-btn" onclick="setAmount(1000)">
+              + ₹1000
+            </button>
+          </div>
+
+          <!-- Custom Amount -->
+          <div class="mb-5">
+            <label
+              class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2"
+              >Custom Amount (₹)</label
+            >
+            <input
+              id="addAmount"
+              type="number"
+              min="1"
+              placeholder="Enter amount"
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 outline-none focus:ring-2 focus:ring-yellow-400 text-lg font-bold transition"
+            />
+          </div>
+
+          <!-- Payment Method -->
+          <div class="mb-5">
+            <label
+              class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3"
+              >Payment Method</label
+            >
+            <div class="flex flex-wrap gap-3" id="methodPills">
+              <label class="method-pill selected" id="pill-upi">
+                <input type="radio" name="payMethod" value="upi" checked /> 📱
+                UPI
+              </label>
+              <label class="method-pill" id="pill-card">
+                <input type="radio" name="payMethod" value="card" /> 💳 Card
+              </label>
+            </div>
+          </div>
+
+          <!-- Add Money Button -->
+          <button
+            onclick="addMoney()"
+            class="w-full py-4 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-lg rounded-2xl transition-all duration-200 shadow-lg hover:shadow-yellow-400/30 hover:scale-[1.01]"
+          >
+            💳 Add Money to Wallet
+          </button>
+        </div>
+
+        <!-- Transaction History (Moved to Row 2 Sidebar) -->
+        <div class="card h-full max-h-[500px] flex flex-col">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold">📋 History</h3>
+            <select
+              id="txnFilter"
+              onchange="renderTransactions()"
+              class="px-2 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 outline-none"
+            >
+              <option value="all">All</option>
+              <option value="credit">In</option>
+              <option value="debit">Out</option>
+            </select>
+          </div>
+          <div
+            id="transactionList"
+            class="overflow-y-auto flex-1 pr-2 custom-scrollbar"
+          >
+            <p class="text-center py-10 text-zinc-400">No transactions yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Row 3: Spending Chart ── -->
+      <div class="card mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-bold">📊 Spending Insights</h3>
+          <select
+            id="chartPeriod"
+            onchange="renderChart()"
+            class="px-3 py-1.5 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 outline-none focus:ring-2 focus:ring-yellow-400"
+          >
+            <option value="6">Last 6 months</option>
+            <option value="3">Last 3 months</option>
+            <option value="12">Last 12 months</option>
+          </select>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="spendingChart"></canvas>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-6 text-center">
+          <div>
+            <p class="text-xs text-zinc-400 font-semibold uppercase">
+              This Month
+            </p>
+            <p class="text-xl font-black text-yellow-500">
+              ₹ <span id="thisMonthSpend">0</span>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 font-semibold uppercase">
+              Total Spent
+            </p>
+            <p class="text-xl font-black">₹ <span id="totalSpend">0</span></p>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 font-semibold uppercase">
+              Total Added
+            </p>
+            <p class="text-xl font-black text-green-500">
+              ₹ <span id="totalAdded">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PIN Modal ── -->
+    <div
+      id="pinModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden"
+    >
+      <div class="card w-full max-w-sm mx-4 text-center">
+        <h2 class="text-xl font-black mb-2" id="pinModalTitle">
+          Set Transaction PIN
+        </h2>
+        <p class="text-sm text-zinc-500 mb-6" id="pinModalDesc">
+          Enter a secure 4-digit PIN
+        </p>
+        <div class="flex justify-center gap-3 mb-6" id="pinInputContainer">
+          <input
+            class="pin-digit"
+            type="password"
+            inputmode="numeric"
+            maxlength="1"
+            id="digit1"
+            autocomplete="off"
+            oninput="handlePinInput(this, 'digit2')"
+          />
+          <input
+            class="pin-digit"
+            type="password"
+            inputmode="numeric"
+            maxlength="1"
+            id="digit2"
+            autocomplete="off"
+            oninput="handlePinInput(this, 'digit3')"
+          />
+          <input
+            class="pin-digit"
+            type="password"
+            inputmode="numeric"
+            maxlength="1"
+            id="digit3"
+            autocomplete="off"
+            oninput="handlePinInput(this, 'digit4')"
+          />
+          <input
+            class="pin-digit"
+            type="password"
+            inputmode="numeric"
+            maxlength="1"
+            id="digit4"
+            autocomplete="off"
+            oninput="handlePinInput(this, null)"
+          />
+        </div>
+        <p id="pinError" class="text-xs text-red-500 mb-4 hidden"></p>
+        <div class="flex gap-3">
+          <button
+            onclick="closePinModal()"
+            class="flex-1 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 font-semibold text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="submitPin()"
+            class="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-black rounded-xl font-black text-sm transition"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Payment Verification Modal ── -->
+    <div
+      id="paymentVerifyModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            id="methodIcon"
+            class="w-12 h-12 bg-yellow-400/20 text-yellow-500 rounded-2xl flex items-center justify-center text-2xl"
+          >
+            📱
+          </div>
+          <div>
+            <h2 id="authModalTitle" class="text-xl font-black">
+              Verify Payment
+            </h2>
+            <p class="text-xs text-zinc-500">Authorize your transaction</p>
+          </div>
+        </div>
+
+        <div id="authContent" class="space-y-4">
+          <!-- Dynamically injected fields based on method -->
+        </div>
+
+        <p
+          id="authError"
+          class="hidden text-red-500 text-xs mt-4 font-semibold text-center"
+        ></p>
+
+        <div class="flex gap-3 mt-8">
+          <button
+            onclick="closePaymentAuthModal()"
+            class="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 rounded-xl font-bold text-sm transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="submitPaymentAuth()"
+            class="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-black rounded-xl font-black text-sm transition"
+          >
+            Verify & Proceed
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Withdraw Amount Modal ── -->
+    <div
+      id="withdrawAmountModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-12 h-12 bg-red-400/20 text-red-500 rounded-2xl flex items-center justify-center text-2xl"
+          >
+            🏦
+          </div>
+          <div>
+            <h2 class="text-xl font-black">Withdraw Funds</h2>
+            <p class="text-xs text-zinc-500">Transfer from wallet to bank</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label
+              class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2"
+              >Amount to Withdraw (₹)</label
+            >
+            <input
+              id="withdrawAmountInput"
+              type="number"
+              min="1"
+              autocomplete="off"
+              placeholder="0.00"
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-red-400 text-2xl font-black transition"
+            />
+          </div>
+          <p
+            id="withdrawAmountError"
+            class="hidden text-red-500 text-xs font-semibold"
+          ></p>
+        </div>
+
+        <div class="flex gap-3 mt-8">
+          <button
+            onclick="closeWithdrawAmountModal()"
+            class="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 rounded-xl font-bold text-sm transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="submitWithdrawAmount()"
+            class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-black text-sm transition shadow-lg shadow-red-500/20"
+          >
+            Proceed
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Invoice Print Area (hidden, used for printing) ── -->
+    <div
+      id="invoicePrintArea"
+      class="hidden fixed inset-0 bg-white text-black p-10 z-[9999]"
+    >
+      <div class="print-container mix-blend-multiply">
+        <div class="print-header">
+          <span class="print-logo-lg">🚕</span>
+          <div>
+            <h1 class="print-title !text-[1.5rem]">iCab Booking</h1>
+            <p class="print-subtitle">Payment Invoice</p>
+          </div>
+        </div>
+        <div class="print-wallet-body" id="invoiceBody"></div>
+        <p class="print-footer">Thank you for using iCab!</p>
+      </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/wallet.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+  </body>
+</html>

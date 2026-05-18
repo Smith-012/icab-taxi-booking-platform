@@ -1,0 +1,372 @@
+/* ═══════════════════════════════════════════════════════
+   booking-detail.css — Booking Detail page styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Route Card ─────────────────────────────────────── */
+.route-card {
+  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  border-radius: 20px;
+  padding: 24px 28px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.route-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(234, 179, 8, 0.08);
+  border-radius: 50%;
+}
+
+.route-stop {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.route-stop-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+  border: 2px solid white;
+}
+
+.route-stop-dot.from {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.route-stop-dot.to {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.route-stop-line {
+  width: 2px;
+  height: 36px;
+  background: linear-gradient(to bottom, #22c55e55, #ef444455);
+  margin-left: 6px;
+  border-radius: 2px;
+}
+
+/* ─── Timeline ───────────────────────────────────────── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+}
+
+.timeline-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 26px;
+  width: 2px;
+  height: 36px;
+  background: #e4e4e7;
+}
+
+.dark .timeline-step:not(:last-child)::after {
+  background: #3f3f46;
+}
+
+.timeline-step.done:not(:last-child)::after {
+  background: #22c55e;
+}
+
+.timeline-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #e4e4e7;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  color: #a1a1aa;
+  font-weight: 700;
+  z-index: 1;
+}
+
+.dark .timeline-icon {
+  background: #18181b;
+  border-color: #3f3f46;
+}
+
+.timeline-step.done .timeline-icon {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.timeline-step.current .timeline-icon {
+  background: #eab308;
+  border-color: #eab308;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.2);
+}
+
+.timeline-content {
+  padding: 4px 0 24px;
+}
+
+.timeline-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.timeline-time {
+  font-size: 0.75rem;
+  color: #71717a;
+  margin-top: 2px;
+}
+
+/* ─── Driver Card ────────────────────────────────────── */
+.driver-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #facc15, #d97706);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  font-size: 1.4rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.driver-action-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px solid #e4e4e7;
+  background: #fafafa;
+}
+
+.dark .driver-action-btn {
+  border-color: #3f3f46;
+  background: #18181b;
+}
+
+.driver-action-btn:hover {
+  background: #fef9c3;
+  border-color: #eab308;
+  transform: scale(1.05);
+}
+
+/* ─── Fare Table ─────────────────────────────────────── */
+.fare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.dark .fare-row {
+  border-color: #27272a;
+}
+
+.fare-row.total {
+  border-bottom: none;
+  border-top: 2px solid #f4f4f5;
+  margin-top: 4px;
+  padding-top: 14px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.dark .fare-row.total {
+  border-color: #27272a;
+}
+
+/* ─── UPI Modal ────────────────────────────────────────── */
+#upiModal {
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#upiModal.active {
+  display: flex !important;
+}
+
+.upi-glass-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.upi-modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: upiModalSlide 0.3s ease-out;
+}
+
+@keyframes upiModalSlide {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.upi-header {
+  background: #1b1ccf;
+  background: linear-gradient(135deg, #1b1ccf 0%, #3b3ce1 100%);
+  color: white;
+  padding: 24px;
+  text-align: center;
+}
+
+.upi-body {
+  padding: 28px;
+  color: #1a1a1a;
+}
+
+.upi-input-group {
+  margin-bottom: 20px;
+}
+
+.upi-input-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.upi-field-wrap {
+  position: relative;
+}
+
+.upi-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.upi-input:focus {
+  border-color: #1b1ccf;
+  box-shadow: 0 0 0 4px rgba(27, 28, 207, 0.1);
+}
+
+.upi-pin-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #999;
+  padding: 4px;
+}
+
+.upi-amount-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #1b1ccf;
+  margin-top: 10px;
+}
+
+.upi-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.upi-pay-btn {
+  background: #1b1ccf;
+  color: white;
+  font-weight: 800;
+  padding: 16px;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 1rem;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+
+.upi-pay-btn:hover {
+  background: #1617b0;
+  transform: scale(1.02);
+}
+
+.upi-cancel-btn {
+  color: #666;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 8px;
+}
+
+.dark .upi-modal-box {
+  background: #1f2937;
+}
+
+.dark .upi-body {
+  color: white;
+}
+
+.dark .upi-input {
+  background: #111827;
+  border-color: #374151;
+  color: white;
+}
+
+.dark .upi-amount-badge {
+  background: #374151;
+  color: #60a5fa;
+}
+
+.dark .upi-input-label {
+  color: #9ca3af;
+}

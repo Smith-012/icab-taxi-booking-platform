@@ -1,0 +1,131 @@
+/* ═══════════════════════════════════════════════════════
+   profile.css — Profile page specific styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Avatar ─────────────────────────────────────────── */
+.avatar-circle {
+  background: linear-gradient(135deg, #facc15, #d97706);
+  transition: background 0.3s ease;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #71717a;
+  /* zinc-500 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .form-group label {
+  color: #a1a1aa;
+  /* zinc-400 */
+}
+
+.form-group .req {
+  color: #ef4444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e4e4e7;
+  /* zinc-200 */
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: #18181b;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  outline: none;
+  width: 100%;
+}
+
+.dark .form-group input,
+.dark .form-group select,
+.dark .form-group textarea {
+  background: #18181b;
+  /* zinc-900 */
+  border-color: #3f3f46;
+  /* zinc-700 */
+  color: #e4e4e7;
+}
+
+.form-group input::placeholder {
+  color: #a1a1aa;
+}
+
+.dark .form-group input::placeholder {
+  color: #52525b;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #eab308;
+  /* yellow-500 */
+  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1);
+}
+
+.form-group textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+.form-group select option {
+  background: #ffffff;
+  color: #18181b;
+}
+
+.dark .form-group select option {
+  background: #18181b;
+  color: #e4e4e7;
+}
+
+/* ─── Gender Radio Options ───────────────────────────── */
+.gender-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e4e4e7;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #3f3f46;
+  background: #fafafa;
+}
+
+.dark .gender-option {
+  border-color: #3f3f46;
+  color: #a1a1aa;
+  background: #18181b;
+}
+
+.gender-option:has(input:checked) {
+  border-color: #eab308;
+  background: #fef9c3;
+  color: #713f12;
+}
+
+.dark .gender-option:has(input:checked) {
+  background: rgba(202, 138, 4, 0.15);
+  color: #fde047;
+  border-color: #eab308;
+}
+
+.gender-option input[type="radio"] {
+  accent-color: #eab308;
+  width: 15px;
+  height: 15px;
+}

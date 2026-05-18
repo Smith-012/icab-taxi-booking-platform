@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Ride History</title>
+    <meta
+      name="description"
+      content="View your complete iCab ride history, filter by status, and export records."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/history.css" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Page Title -->
+      <div
+        class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">Ride History</h1>
+          <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+            All your past trips in one place.
+          </p>
+        </div>
+        <button
+          onclick="exportCSV()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl text-sm transition"
+        >
+          ⬇️ Export CSV
+        </button>
+      </div>
+
+      <!-- ── Stats Bar ── -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div
+          class="stat-pill bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-zinc-800"
+        >
+          <span class="text-3xl mb-2">🚕</span>
+          <p class="text-2xl font-black" id="statTotal">0</p>
+          <p class="text-xs text-zinc-400 font-semibold mt-1">Total Rides</p>
+        </div>
+        <div
+          class="stat-pill bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-zinc-800"
+        >
+          <span class="text-3xl mb-2">💰</span>
+          <p class="text-2xl font-black text-yellow-500">
+            ₹<span id="statSpent">0</span>
+          </p>
+          <p class="text-xs text-zinc-400 font-semibold mt-1">Total Spent</p>
+        </div>
+        <div
+          class="stat-pill bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-zinc-800"
+        >
+          <span class="text-3xl mb-2">✅</span>
+          <p class="text-2xl font-black text-green-500" id="statCompleted">0</p>
+          <p class="text-xs text-zinc-400 font-semibold mt-1">Completed</p>
+        </div>
+        <div
+          class="stat-pill bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-zinc-800"
+        >
+          <span class="text-3xl mb-2">📊</span>
+          <p class="text-2xl font-black text-blue-500">
+            ₹<span id="statAvg">0</span>
+          </p>
+          <p class="text-xs text-zinc-400 font-semibold mt-1">Avg Fare</p>
+        </div>
+      </div>
+
+      <!-- ── Filters ── -->
+      <div class="card mb-6">
+        <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+          <!-- Search -->
+          <div class="relative flex-1 min-w-[200px]">
+            <span
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"
+              >🔍</span
+            >
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search pickup or dropoff..."
+              oninput="applyFilters()"
+              class="filter-search"
+            />
+          </div>
+          <!-- Status filter -->
+          <select
+            id="statusFilter"
+            onchange="applyFilters()"
+            class="filter-select"
+          >
+            <option value="all">🚦 All Status</option>
+            <option value="pending">🟡 Pending</option>
+            <option value="in_progress">🔵 In Progress</option>
+            <option value="completed">✅ Completed</option>
+            <option value="cancelled">❌ Cancelled</option>
+          </select>
+          <!-- Sort -->
+          <select
+            id="sortOrder"
+            onchange="applyFilters()"
+            class="filter-select"
+          >
+            <option value="newest">📅 Newest First</option>
+            <option value="oldest">📅 Oldest First</option>
+            <option value="highest">💰 Highest Fare</option>
+            <option value="lowest">💰 Lowest Fare</option>
+          </select>
+          <!-- Date range -->
+          <div class="flex items-center gap-2">
+            <span
+              class="text-xs text-zinc-500 dark:text-zinc-400 font-bold whitespace-nowrap"
+              >From</span
+            >
+            <input
+              id="dateFrom"
+              type="date"
+              onchange="applyFilters()"
+              class="filter-select font-normal"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-xs text-zinc-500 dark:text-zinc-400 font-bold whitespace-nowrap"
+              >To</span
+            >
+            <input
+              id="dateTo"
+              type="date"
+              onchange="applyFilters()"
+              class="filter-select font-normal"
+            />
+          </div>
+          <!-- Clear -->
+          <button
+            onclick="clearFilters()"
+            class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-semibold text-zinc-500 hover:border-red-400 hover:text-red-400 transition"
+          >
+            ✕ Clear
+          </button>
+        </div>
+        <!-- Result count -->
+        <p id="resultCount" class="text-xs text-zinc-400 mt-3 font-medium"></p>
+      </div>
+
+      <!-- ── Ride List ── -->
+      <div id="rideList">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- ── Load More ── -->
+      <div id="loadMoreWrap" class="text-center mt-6 hidden">
+        <button
+          onclick="loadMore()"
+          class="px-8 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-2xl font-bold text-sm hover:border-yellow-400 hover:text-yellow-500 transition"
+        >
+          Load More Rides
+        </button>
+      </div>
+    </main>
+
+    <!-- ── Ride Detail Modal ── -->
+    <div
+      id="detailModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 rounded-3xl w-full max-w-md shadow-2xl border border-zinc-100 dark:border-zinc-800 overflow-hidden"
+      >
+        <!-- Modal Header -->
+        <div
+          class="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between"
+        >
+          <div>
+            <h2 class="text-xl font-black">Ride Details</h2>
+            <p id="modalRideId" class="text-xs text-zinc-400 mt-0.5">
+              #RID-000
+            </p>
+          </div>
+          <button
+            onclick="closeDetail()"
+            class="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition font-bold"
+          >
+            ✕
+          </button>
+        </div>
+        <!-- Modal Body -->
+        <div class="p-6 space-y-0" id="modalBody">
+          <!-- Filled by JS -->
+        </div>
+        <!-- Modal Footer -->
+        <div
+          class="p-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex gap-3 flex-wrap"
+        >
+          <button
+            onclick="closeDetail()"
+            class="py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
+          >
+            Close
+          </button>
+          <button
+            onclick="openFullDetail()"
+            class="flex-1 py-3 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 text-white rounded-xl font-bold text-sm transition"
+          >
+            📋 Full Details
+          </button>
+          <button
+            onclick="bookSameRide()"
+            class="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-black rounded-xl font-black text-sm transition"
+          >
+            🔄 Book Again
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=13"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/history.js?v=13"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+  </body>
+</html>

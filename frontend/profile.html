@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - My Profile</title>
+    <meta
+      name="description"
+      content="Manage your iCab profile, addresses, preferences and account security."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/profile.css" />
+    <!-- Cropper.js -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <!-- Shared Header -->
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Page Title -->
+      <div
+        class="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
+      >
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">My Profile</h1>
+          <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm">
+            Keep your details up to date for a smoother ride experience.
+          </p>
+        </div>
+        <button
+          id="toggleEditBtn"
+          onclick="toggleEditMode()"
+          class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-2xl transition-all duration-200 shadow-md hover:shadow-yellow-400/30 flex items-center gap-2"
+        >
+          <span id="btnIcon">✏️</span> <span id="btnText">Edit Profile</span>
+        </button>
+      </div>
+
+      <!-- Profile Completion Bar -->
+      <div class="card mb-8">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-semibold text-sm">Profile Completion</span>
+          <span id="completionPct" class="text-yellow-500 font-black text-lg"
+            >0%</span
+          >
+        </div>
+        <div
+          class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3 overflow-hidden"
+        >
+          <div
+            id="completionBar"
+            class="h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-700"
+            style="width: 0%"
+          ></div>
+        </div>
+        <p
+          id="completionMsg"
+          class="text-xs text-zinc-500 dark:text-zinc-400 mt-2"
+        >
+          Complete your profile to unlock faster bookings.
+        </p>
+      </div>
+
+      <!-- Profile Header Banner (Center-aligned Card) -->
+      <div class="flex flex-col items-center mb-8">
+        <div
+          class="card w-full max-w-2xl flex flex-col items-center text-center gap-6 py-10 relative overflow-hidden"
+        >
+          <!-- Subtle background glow -->
+          <div
+            class="absolute -top-24 -left-24 w-48 h-48 bg-yellow-400/10 rounded-full blur-3xl"
+          ></div>
+          <div
+            class="absolute -bottom-24 -right-24 w-48 h-48 bg-yellow-400/10 rounded-full blur-3xl"
+          ></div>
+
+          <!-- Avatar Section -->
+          <div class="relative z-10">
+            <div class="relative w-32 h-32">
+              <div
+                id="profileAvatar"
+                class="avatar-circle w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-zinc-950 text-5xl font-black flex items-center justify-center shadow-2xl border-4 border-white dark:border-zinc-800 overflow-hidden"
+              >
+                ?
+              </div>
+              <label
+                for="photoInput"
+                id="avatarUploadLabel"
+                class="absolute bottom-1 right-1 w-10 h-10 bg-yellow-400 hover:bg-yellow-500 text-zinc-950 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300 hover:scale-110 border-2 border-white dark:border-zinc-900 hidden"
+              >
+                📷
+              </label>
+              <input
+                id="photoInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                onchange="handlePhotoUpload(event)"
+              />
+            </div>
+          </div>
+
+          <!-- User Info -->
+          <div class="relative z-10 flex flex-col items-center">
+            <h2
+              id="profileDisplayName"
+              class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight"
+            >
+              Your Name
+            </h2>
+            <p
+              id="profileDisplayEmail"
+              class="text-zinc-500 dark:text-zinc-400 font-medium"
+            >
+              your@email.com
+            </p>
+            <p
+              id="profileDisplayPhone"
+              class="text-sm text-zinc-400 mt-0.5"
+            ></p>
+
+            <div class="flex items-center gap-3 mt-4">
+              <span
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-black uppercase tracking-widest border border-zinc-200 dark:border-zinc-700"
+              >
+                🚕 Rider
+              </span>
+              <button
+                id="removePhotoBtn"
+                onclick="removePhoto()"
+                class="hidden text-xs text-red-500 hover:text-red-400 font-bold underline transition"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Row -->
+          <div
+            class="w-full max-w-md grid grid-cols-2 divide-x divide-zinc-100 dark:divide-zinc-800 pt-6 mt-2 relative z-10"
+          >
+            <div class="flex flex-col items-center px-4">
+              <span
+                class="text-3xl font-black text-yellow-500"
+                id="statTotalRides"
+                >0</span
+              >
+              <span
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1"
+                >Total Rides</span
+              >
+            </div>
+            <div class="flex flex-col items-center px-4">
+              <span
+                class="text-lg font-black dark:text-zinc-200"
+                id="statJoined"
+                >—</span
+              >
+              <span
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1"
+                >Member Since</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Form Sections (single column, full-width) -->
+      <div class="flex flex-col gap-6">
+        <!-- 1. Personal Information -->
+        <div class="card">
+          <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+            👤 Personal Information
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label>First Name <span class="req">*</span></label>
+              <input
+                id="pfFirstName"
+                type="text"
+                placeholder="e.g. Ravi"
+                maxlength="10"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="validateFirstName()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Last Name <span class="req">*</span></label>
+              <input
+                id="pfLastName"
+                type="text"
+                placeholder="e.g. Kumar"
+                maxlength="10"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="validateLastName()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Email Address <span class="req">*</span></label>
+              <input
+                id="pfEmail"
+                type="email"
+                placeholder="e.g. ravi@email.com"
+                readonly
+                class="cursor-not-allowed opacity-80"
+                oninput="validateEmail()"
+              />
+            </div>
+            <div class="form-group">
+              <label>Phone Number <span class="req">*</span></label>
+              <div class="relative flex items-center">
+                <div
+                  class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"
+                >
+                  <span class="text-lg mr-2">🇮🇳</span>
+                  <span
+                    class="text-zinc-500 font-bold border-r border-zinc-300 dark:border-zinc-600 pr-3"
+                    >+91</span
+                  >
+                </div>
+                <input
+                  id="pfPhone"
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  maxlength="10"
+                  readonly
+                  class="cursor-not-allowed opacity-80 !pl-[6.5rem]"
+                  oninput="
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    validatePhone();
+                  "
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label
+                >Date of Birth <span class="text-red-500">*</span> (18+
+                only)</label
+              >
+              <input
+                id="pfDob"
+                type="date"
+                onchange="validateDOB()"
+                min="1971-01-01"
+                readonly
+                class="cursor-not-allowed opacity-80"
+              />
+              <small
+                id="dobValidationMsg"
+                class="text-gray-500 text-xs"
+              ></small>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <div class="flex gap-3 mt-2 flex-wrap" id="genderGroup">
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    id="gMale"
+                    disabled
+                  />
+                  Male</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    id="gFemale"
+                    disabled
+                  />
+                  Female</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="other"
+                    id="gOther"
+                    disabled
+                  />
+                  Other</label
+                >
+                <label class="gender-option cursor-not-allowed opacity-60"
+                  ><input
+                    type="radio"
+                    name="gender"
+                    value="prefer_not"
+                    id="gNone"
+                    disabled
+                  />
+                  Prefer not to say</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Saved Addresses -->
+        <div class="card">
+          <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+            📍 Saved Addresses
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label>🏠 Home Address</label>
+              <textarea
+                id="pfHome"
+                placeholder="e.g. 12, Gandhi Nagar, Mumbai"
+                readonly
+                class="cursor-not-allowed opacity-80"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>🏢 Work Address</label>
+              <textarea
+                id="pfWork"
+                placeholder="e.g. Tech Park, Sector 5, Pune"
+                readonly
+                class="cursor-not-allowed opacity-80"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Emergency Contacts (up to 3) -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+              🆘 Emergency Contacts (up to 3)
+            </h3>
+            <button
+              type="button"
+              class="text-sm text-blue-500 hover:text-blue-700 font-semibold"
+              onclick="loadEmergencyContacts()"
+              title="Refresh contacts list"
+            >
+              🔄 Refresh
+            </button>
+          </div>
+
+          <!-- Existing Contacts List -->
+          <div id="emergencyContactsContainer" class="mb-6 min-h-12"></div>
+
+          <!-- Add New Contact Form -->
+          <div
+            id="addContactFormContainer"
+            class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6"
+          >
+            <h4 class="font-semibold mb-4 text-gray-900 dark:text-white">
+              Add New Emergency Contact
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="form-group">
+                <label>Contact Name (up to 25 characters)</label>
+                <input
+                  id="newContactName"
+                  type="text"
+                  placeholder="e.g. Priya Kumar"
+                  maxlength="25"
+                  oninput="validateContactName()"
+                  readonly
+                  class="cursor-not-allowed opacity-80"
+                />
+                <small id="nameValidationMsg" class="text-gray-500"></small>
+              </div>
+              <div class="form-group">
+                <label>Contact Phone (10 digits)</label>
+                <div
+                  class="flex items-center border rounded-lg overflow-hidden"
+                >
+                  <span class="px-2 font-semibold text-sm">+91</span>
+                  <input
+                    id="newContactPhone"
+                    type="tel"
+                    placeholder="9123456789"
+                    maxlength="10"
+                    oninput="validateContactPhone()"
+                    class="flex-1 px-3 py-2 outline-none cursor-not-allowed opacity-80"
+                    readonly
+                  />
+                </div>
+                <small id="phoneValidationMsg" class="text-gray-500"></small>
+              </div>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button
+                id="addContactBtn"
+                type="button"
+                disabled
+                class="px-6 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition cursor-not-allowed opacity-50"
+                onclick="submitNewContact()"
+              >
+                ✓ Add Contact
+              </button>
+              <button
+                id="clearContactBtn"
+                type="button"
+                disabled
+                class="px-6 py-2 bg-gray-400 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-semibold rounded-lg text-sm transition cursor-not-allowed opacity-50"
+                onclick="resetContactForm()"
+              >
+                ✗ Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Change Password -->
+        <div class="card">
+          <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+            🔒 Change Password
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="form-group">
+              <label>Current Password</label>
+              <div class="relative">
+                <input
+                  id="pfCurrentPass"
+                  type="password"
+                  placeholder="Enter current password"
+                  class="w-full pr-10"
+                  oninput="validateCurrentPassword()"
+                />
+                <button
+                  type="button"
+                  id="togglePfCurrentPass"
+                  onclick="togglePwd('pfCurrentPass', 'togglePfCurrentPass')"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small id="currentPassMsg" class="text-gray-500 text-xs"></small>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <div class="relative">
+                <input
+                  id="pfNewPass"
+                  type="password"
+                  placeholder="8+ chars: Upper, lower, number, special"
+                  class="w-full pr-10"
+                  oninput="validateNewPassword()"
+                />
+                <button
+                  type="button"
+                  id="togglePfNewPass"
+                  onclick="togglePwd('pfNewPass', 'togglePfNewPass')"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small id="newPassMsg" class="text-gray-500 text-xs"></small>
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <div class="relative">
+                <input
+                  id="pfConfirmPass"
+                  type="password"
+                  placeholder="Repeat new password"
+                  class="w-full pr-10"
+                  oninput="validateConfirmPassword()"
+                />
+                <button
+                  type="button"
+                  id="togglePfConfirmPass"
+                  onclick="togglePwd('pfConfirmPass', 'togglePfConfirmPass')"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                >
+                  👁️
+                </button>
+              </div>
+              <small id="confirmPassMsg" class="text-gray-500 text-xs"></small>
+            </div>
+          </div>
+          <div
+            id="passMsg"
+            class="hidden text-sm font-semibold p-3 rounded-xl mt-2"
+          ></div>
+          <div class="flex justify-center mt-8">
+            <button
+              onclick="changePassword()"
+              class="px-10 py-4 bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-black rounded-2xl transition shadow-xl hover:shadow-zinc-800/20 w-full sm:w-auto min-w-[240px]"
+            >
+              🔑 Update Password
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. Account Management -->
+        <div class="card border-2 border-red-200 dark:border-red-900/50">
+          <h3
+            class="text-lg font-bold mb-2 flex items-center gap-2 text-red-600 dark:text-red-400"
+          >
+            ⚠️ Account Management
+          </h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+            If you wish to close your account, all your data including ride
+            history, wallet balance and profile will be
+            <strong class="text-red-500">permanently removed</strong>.
+          </p>
+          <div class="flex justify-center">
+            <button
+              id="deleteAccountBtn"
+              onclick="deleteAccount()"
+              class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all duration-200 shadow-md hover:shadow-red-600/30 flex items-center gap-2"
+            >
+              🗑️ Close My Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Cropper Modal -->
+    <div
+      id="cropModal"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md hidden"
+    >
+      <div
+        class="bg-white dark:bg-zinc-900 w-full max-w-lg mx-4 rounded-3xl overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800"
+      >
+        <div
+          class="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center"
+        >
+          <h3 class="text-xl font-black">✂️ Crop Profile Photo</h3>
+          <button
+            onclick="closeCropModal()"
+            class="text-2xl text-zinc-400 hover:text-zinc-600"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="p-4 bg-zinc-50 dark:bg-black/20">
+          <div class="max-h-[60vh] overflow-hidden rounded-xl">
+            <img id="cropImage" src="" class="max-w-full block" />
+          </div>
+        </div>
+        <div class="p-6 flex gap-3">
+          <button
+            onclick="closeCropModal()"
+            class="flex-1 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="applyCrop()"
+            class="flex-1 py-3.5 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-2xl transition shadow-lg shadow-yellow-400/20"
+          >
+            ✅ Save Cropped Photo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Scripts -->
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/profile.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+  </body>
+</html>

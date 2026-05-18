@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page Not Found</title>
+    <meta
+      name="description"
+      content="Oops! This page took a wrong turn. Let's get you back on track."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/404.css" />
+  </head>
+
+  <body class="page-bg text-white flex flex-col min-h-screen">
+    <main
+      class="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-4"
+    >
+      <!-- Stars -->
+      <div class="stars-container" id="starsContainer"></div>
+
+      <!-- Moon -->
+      <div class="moon"></div>
+
+      <!-- Street lamp left -->
+      <div class="street-lamp street-lamp-left">
+        <div class="lamp-head"></div>
+        <div class="lamp-light"></div>
+        <div class="lamp-pole"></div>
+      </div>
+
+      <!-- Street lamp right -->
+      <div class="street-lamp street-lamp-right">
+        <div class="lamp-head"></div>
+        <div class="lamp-light"></div>
+        <div class="lamp-pole"></div>
+      </div>
+
+      <!-- 404 Glitch Number -->
+      <div class="glitch-text select-none mb-2 mt-[-50px]">404</div>
+
+      <!-- Text block -->
+      <p
+        class="text-2xl md:text-3xl font-black text-white mb-2 text-center glitch-shadow"
+      >
+        Wrong Turn! 🚦
+      </p>
+      <p class="text-zinc-400 text-sm md:text-base text-center max-w-sm mb-8">
+        Looks like this road doesn't exist. Our developer is already working on
+        it!
+      </p>
+
+      <!-- Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 mb-12">
+        <a
+          href="index.html"
+          class="px-8 py-4 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-xl transition text-center shadow-lg hover:shadow-yellow-400/30"
+        >
+          🏠 Take Me Home
+        </a>
+        <button
+          onclick="goBack()"
+          class="px-8 py-4 border-2 border-zinc-600 hover:border-yellow-400 text-zinc-300 hover:text-yellow-400 font-bold rounded-xl transition text-center"
+        >
+          ← Go Back
+        </button>
+      </div>
+
+      <!-- ══ SCENE ══════════════════════════════════════ -->
+      <div class="scene-wrapper">
+        <!-- Road -->
+        <div class="road">
+          <div class="road-line"></div>
+          <div class="road-line"></div>
+          <div class="road-line"></div>
+          <div class="road-line"></div>
+          <div class="road-line"></div>
+        </div>
+      </div>
+
+      <!-- Small caption below scene -->
+      <p class="text-zinc-500 text-xs mt-8 text-center animate-pulse">
+        This route is currently under maintenance... please try another way 🛣️
+      </p>
+    </main>
+
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/404.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+  </body>
+</html>

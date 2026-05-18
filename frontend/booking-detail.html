@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iCab - Booking Detail</title>
+    <meta
+      name="description"
+      content="View full details of your iCab ride booking."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="assets/js/config.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css?v=14" />
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="assets/css/booking-detail.css" />
+    <link rel="stylesheet" href="assets/css/map.css?v=5" />
+  </head>
+
+  <body
+    class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition duration-300 pt-20 flex flex-col min-h-screen"
+  >
+    <div id="header-container"></div>
+
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <!-- Back Button -->
+      <button
+        onclick="history.back()"
+        class="flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-yellow-500 transition mb-6"
+      >
+        ← Back
+      </button>
+
+      <!-- Ride not found state -->
+      <div id="notFound" class="hidden text-center py-20">
+        <div class="text-6xl mb-4">🔍</div>
+        <h2 class="text-2xl font-black mb-2">Booking Not Found</h2>
+        <p class="text-zinc-400 mb-6">
+          We couldn't find this booking. It may have been removed.
+        </p>
+        <a
+          href="history.html"
+          class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-2xl transition"
+        >
+          View All Rides
+        </a>
+      </div>
+
+      <!-- Main Booking Content -->
+      <div id="bookingContent" class="hidden">
+        <!-- Page Title Row -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
+        >
+          <div>
+            <h1 class="text-3xl font-extrabold tracking-tight">
+              Booking Detail
+            </h1>
+            <p id="rideIdLabel" class="text-zinc-400 text-sm mt-1 font-mono">
+              #RID-000000
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span
+              id="statusBadge"
+              class="status-badge status-pending px-4 py-1.5 text-sm"
+              >pending</span
+            >
+            <span id="rideDateLabel" class="text-xs text-zinc-400"></span>
+          </div>
+        </div>
+
+        <!-- ─── Ride Status Steps ─────────────────────── -->
+        <div class="card mb-2 py-5">
+          <div class="ride-status-steps">
+            <div class="status-step">
+              <div class="status-step-dot active" id="step-pending">📋</div>
+              <div class="status-step-label">Booked</div>
+            </div>
+            <div class="status-line" id="line-0"></div>
+            <div class="status-step">
+              <div class="status-step-dot" id="step-accepted">👤</div>
+              <div class="status-step-label">Driver Assigned</div>
+            </div>
+            <div class="status-line" id="line-1"></div>
+            <div class="status-step">
+              <div class="status-step-dot" id="step-in_progress">🚕</div>
+              <div class="status-step-label">En Route</div>
+            </div>
+            <div class="status-line" id="line-2"></div>
+            <div class="status-step">
+              <div class="status-step-dot" id="step-completed">✅</div>
+              <div class="status-step-label">Done</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- LEFT Column -->
+          <div class="lg:col-span-2 flex flex-col gap-6">
+            <!-- Live Driver Tracking Map -->
+            <div class="card p-0 overflow-hidden" id="trackingMapCard">
+              <div id="trackingMap"></div>
+              <!-- Driver Live Info Bar -->
+              <div class="driver-live-card m-4" id="driverLiveCard">
+                <div class="driver-live-avatar" id="driverLiveInitial">R</div>
+                <div class="driver-live-info">
+                  <div class="driver-live-name" id="driverLiveName">
+                    Finding driver...
+                  </div>
+                  <div class="driver-live-sub" id="driverLiveSub">
+                    Locating nearest driver
+                  </div>
+                  <div class="driver-live-sub mt-1" id="driverLivePlate"></div>
+                </div>
+                <div class="driver-live-eta" id="driverETA">—</div>
+              </div>
+            </div>
+
+            <!-- Route Card -->
+            <div class="route-card">
+              <div class="route-stop mb-2">
+                <div class="route-stop-dot from mt-1"></div>
+                <div>
+                  <p
+                    class="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-0.5"
+                  >
+                    Pickup
+                  </p>
+                  <p id="ridePickup" class="font-bold text-base">—</p>
+                  <div id="ridePickupCoords" class="mt-1"></div>
+                </div>
+              </div>
+              <div class="route-stop-line ml-[6px] mb-2"></div>
+              <div class="route-stop">
+                <div class="route-stop-dot to mt-1"></div>
+                <div>
+                  <p
+                    class="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-0.5"
+                  >
+                    Drop-off
+                  </p>
+                  <p id="rideDropoff" class="font-bold text-base">—</p>
+                  <div id="rideDropoffCoords" class="mt-1"></div>
+                </div>
+              </div>
+              <!-- Stats Row -->
+              <div class="flex gap-6 mt-5 pt-4 border-t border-white/10">
+                <div>
+                  <p class="text-xs text-zinc-400">Distance</p>
+                  <p id="rideDistance" class="font-bold">—</p>
+                </div>
+                <div>
+                  <p class="text-xs text-zinc-400">Duration</p>
+                  <p id="rideDuration" class="font-bold">—</p>
+                </div>
+                <div>
+                  <p class="text-xs text-zinc-400">Ride Type</p>
+                  <p id="rideType" class="font-bold">—</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+              <h3 class="text-lg font-bold mb-6">🕐 Ride Timeline</h3>
+              <div class="timeline" id="rideTimeline">
+                <!-- Filled by JS -->
+              </div>
+            </div>
+
+            <!-- Driver Card -->
+            <div class="card" id="driverSection">
+              <h3 class="text-lg font-bold mb-5">🚗 Your Driver</h3>
+              <div class="flex items-center gap-4">
+                <div class="driver-avatar" id="driverAvatar">?</div>
+                <div class="flex-1">
+                  <p class="font-black text-lg" id="driverName">—</p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span
+                      class="text-yellow-500 font-bold text-sm"
+                      id="driverRating"
+                      >⭐ —</span
+                    >
+                    <span class="text-zinc-400 text-xs">•</span>
+                    <span class="text-zinc-500 text-sm" id="driverVehicle"
+                      >—</span
+                    >
+                  </div>
+                  <p
+                    class="text-xs text-zinc-400 mt-1 font-mono"
+                    id="driverPlate"
+                  >
+                    —
+                  </p>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <button
+                    onclick="showToast('Calling driver... (mock)', 'info')"
+                    class="driver-action-btn"
+                    title="Call Driver"
+                  >
+                    📞
+                  </button>
+                  <button
+                    onclick="showToast('Opening chat... (mock)', 'info')"
+                    class="driver-action-btn"
+                    title="Message Driver"
+                  >
+                    💬
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rate & Review (only for completed rides) -->
+            <div class="card" id="ratingSection" style="display: none">
+              <h3 class="text-lg font-bold mb-2">⭐ Rate Your Ride</h3>
+              <p class="text-sm text-zinc-400 mb-5">How was your experience?</p>
+              <div class="flex gap-1 mb-5" id="starRow">
+                <button class="star-btn" onclick="setRating(1)">★</button>
+                <button class="star-btn" onclick="setRating(2)">★</button>
+                <button class="star-btn" onclick="setRating(3)">★</button>
+                <button class="star-btn" onclick="setRating(4)">★</button>
+                <button class="star-btn" onclick="setRating(5)">★</button>
+              </div>
+              <textarea
+                id="reviewText"
+                rows="3"
+                placeholder="Write a review (optional)..."
+                class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 outline-none focus:ring-2 focus:ring-yellow-400 text-sm resize-none transition mb-4"
+              ></textarea>
+              <button
+                onclick="submitRating()"
+                class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-xl transition w-full sm:w-auto"
+              >
+                Submit Review
+              </button>
+            </div>
+
+            <!-- Already rated -->
+            <div class="card" id="ratedSection" style="display: none">
+              <h3 class="text-lg font-bold mb-3">⭐ Your Rating</h3>
+              <div class="flex items-center gap-3">
+                <div class="flex gap-1" id="ratedStars"></div>
+                <span class="text-zinc-400 text-sm" id="ratedText"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT Column -->
+          <div class="flex flex-col gap-6">
+            <!-- Fare Breakdown -->
+            <div class="card">
+              <h3 class="text-lg font-bold mb-4">💰 Fare Breakdown</h3>
+              <div id="fareTable"><!-- Filled by JS --></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+              <h3
+                class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4"
+              >
+                Actions
+              </h3>
+              <div class="flex flex-col gap-3">
+                <button
+                  onclick="downloadInvoice()"
+                  id="invoiceBtn"
+                  class="w-full py-3 flex items-center justify-center gap-2 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl text-sm transition"
+                >
+                  🧾 Download Invoice
+                </button>
+                <button
+                  onclick="bookAgain()"
+                  class="w-full py-3 flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl text-sm transition"
+                >
+                  🔄 Book Again
+                </button>
+                <button
+                  onclick="cancelRide()"
+                  id="cancelBtn"
+                  class="hidden w-full py-3 flex items-center justify-center gap-2 border-2 border-red-400 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold rounded-xl text-sm transition"
+                >
+                  ✕ Cancel Ride
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Invoice Print Area -->
+    <div
+      id="invoicePrintArea"
+      class="hidden fixed inset-0 bg-white text-black p-10 z-[9999]"
+    >
+      <div class="print-container">
+        <div class="print-header !mb-[28px]">
+          <span class="print-logo-xl">🚕</span>
+          <div>
+            <h1 class="print-title">iCab</h1>
+            <p class="print-subtitle">Booking Invoice</p>
+          </div>
+        </div>
+        <div id="invoiceBody" class="print-body"></div>
+        <p class="print-footer !mt-[24px]">Thank you for choosing iCab! 🙏</p>
+      </div>
+    </div>
+
+    <!-- CANCEL REASON MODAL -->
+    <div
+      id="cancelReasonModal"
+      class="fixed inset-0 bg-black/50 hidden justify-center items-center opacity-0 transition-opacity duration-300 z-50"
+    >
+      <div
+        id="cancelReasonBox"
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md relative transform scale-95 transition-all duration-300"
+      >
+        <button
+          onclick="closeCancelModal()"
+          class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        >
+          &times;
+        </button>
+
+        <h2
+          class="text-2xl font-bold mb-2 text-center text-gray-900 dark:text-white"
+        >
+          Cancel Ride
+        </h2>
+        <p class="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          Please tell us why you are cancelling.
+        </p>
+
+        <div class="space-y-3 mb-6" id="cancelReasonOptions">
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <input
+              type="radio"
+              name="cancelReason"
+              value="Driver is taking too long"
+              class="w-4 h-4 text-yellow-500"
+              checked
+            />
+            <span class="text-sm font-semibold dark:text-gray-300"
+              >Driver is taking too long</span
+            >
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <input
+              type="radio"
+              name="cancelReason"
+              value="Driver asked me to cancel"
+              class="w-4 h-4 text-yellow-500"
+            />
+            <span class="text-sm font-semibold dark:text-gray-300"
+              >Driver asked me to cancel</span
+            >
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <input
+              type="radio"
+              name="cancelReason"
+              value="Changed my mind"
+              class="w-4 h-4 text-yellow-500"
+            />
+            <span class="text-sm font-semibold dark:text-gray-300"
+              >Changed my mind</span
+            >
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <input
+              type="radio"
+              name="cancelReason"
+              value="Other"
+              class="w-4 h-4 text-yellow-500"
+            />
+            <span class="text-sm font-semibold dark:text-gray-300">Other</span>
+          </label>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            onclick="closeCancelModal()"
+            class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold rounded-xl transition duration-200"
+          >
+            Keep Ride
+          </button>
+          <button
+            type="button"
+            onclick="confirmCancelRide()"
+            class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition duration-200"
+          >
+            Confirm Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <!-- CUSTOM UPI MODAL -->
+    <div
+      id="upiModal"
+      class="fixed inset-0"
+    >
+      <div class="upi-glass-backdrop" onclick="closeUPIModal()"></div>
+      <div class="upi-modal-box">
+        <div class="upi-header">
+          <div class="flex items-center justify-center gap-2 mb-1">
+            <span class="text-2xl">📱</span>
+            <span class="font-black tracking-tighter text-xl">UPI Transaction</span>
+          </div>
+          <p class="text-xs opacity-80 font-bold uppercase tracking-widest">
+            Secure Payment Gateway
+          </p>
+        </div>
+
+        <div class="upi-body">
+          <div class="text-center mb-6">
+            <div class="upi-amount-badge" id="upiModalAmount">₹0.00</div>
+          </div>
+
+          <div class="upi-input-group">
+            <label class="upi-input-label">Enter UPI ID</label>
+            <div class="upi-field-wrap">
+              <input
+                type="text"
+                id="upiIdInput"
+                class="upi-input"
+                placeholder="username@bank"
+              />
+            </div>
+          </div>
+
+          <div class="upi-input-group">
+            <label class="upi-input-label">Enter 6-Digit PIN</label>
+            <div class="upi-field-wrap">
+              <input
+                type="password"
+                id="upiPinInput"
+                class="upi-input"
+                placeholder="••••••"
+                inputmode="numeric"
+                maxlength="6"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+              />
+              <button
+                type="button"
+                id="pinToggleBtn"
+                onclick="toggleUPIPinVisibility()"
+                class="upi-pin-toggle"
+              >
+                👁️
+              </button>
+            </div>
+            <p class="text-[10px] text-zinc-400 mt-2 text-center">
+              🔒 Your PIN is encrypted and never stored on our servers.
+            </p>
+          </div>
+
+          <div class="upi-footer">
+            <button
+              onclick="confirmUPIPayment()"
+              class="upi-pay-btn shadow-lg shadow-blue-500/30"
+            >
+              Verify & Pay
+            </button>
+            <button
+              onclick="closeUPIModal()"
+              class="upi-cancel-btn hover:text-red-500 transition"
+            >
+              Cancel Transaction
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="assets/js/loader.js?v=12"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/main.js?v=12"></script>
+    <script src="assets/js/booking-detail.js?v=12"></script>
+    <script src="assets/js/notifications.js?v=12"></script>
+    <script src="assets/js/map.js?v=27"></script>
+  </body>
+</html>
