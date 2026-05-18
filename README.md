@@ -1,4 +1,4 @@
-# iCab - Ride-Sharing Application
+# iCab - Taxi Booking Application
 
 ## Complete Documentation
 
